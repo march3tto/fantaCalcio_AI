@@ -205,10 +205,12 @@ function contaRosa(rosa) {
   return { por, altri };
 }
 
-function puoAssegnare(squadra, ruolo) {
+// maxPor/maxAltri di default sono i CAP_POR/CAP_ALTRI storici, ma i chiamanti "reali"
+// (dentro App/AstaTab) passano sempre setup.maxPortieri/setup.maxAltri, configurabili in Setup.
+function puoAssegnare(squadra, ruolo, maxPor = CAP_POR, maxAltri = CAP_ALTRI) {
   if (!squadra) return false;
   const { por, altri } = contaRosa(squadra.rosa);
-  return ruolo === "Por" ? por < CAP_POR : altri < CAP_ALTRI;
+  return ruolo === "Por" ? por < maxPor : altri < maxAltri;
 }
 
 // ---------- Analisi ruoli/moduli di una rosa ----------
@@ -496,7 +498,12 @@ function estraiPrezzoDaTesto(testoGrezzo) {
 }
 
 const initialState = {
-  setup: { budgetTotale: 1000, numPartecipanti: 10, modulo: "3-4-3", split: { ...DEFAULT_SPLIT } },
+  setup: {
+    budgetTotale: 1000, numPartecipanti: 10, modulo: "3-4-3", split: { ...DEFAULT_SPLIT },
+    // Limiti di rosa: min è solo indicativo (nessun blocco, serve da promemoria/traguardo
+    // nelle tab Rosa/Squadre), max è il tetto che puoAssegnare fa rispettare davvero.
+    minPortieri: 2, maxPortieri: CAP_POR, minAltri: 20, maxAltri: CAP_ALTRI,
+  },
   slots: buildSlotsFromModulo("3-4-3"),
   giocatori: [], // {id, ruoli, nome, squadra, quotazione, note, stato: 'disponibile'|'preso_altri'|'mio', presoDa, preferito}
   squadre: buildSquadre(10, 1000),
@@ -518,6 +525,10 @@ function useAstaStorage() {
           setState((prev) => {
             const merged = { ...prev, ...parsed };
             merged.algoritmi = { ...prev.algoritmi, ...parsed.algoritmi };
+            // Deep merge anche per setup: un salvataggio precedente all'aggiunta di un
+            // nuovo campo (es. minPortieri/maxPortieri) non lo contiene, altrimenti
+            // resterebbe undefined dopo il caricamento invece di prendere il default.
+            merged.setup = { ...prev.setup, ...parsed.setup };
             return merged;
           });
         }
@@ -875,7 +886,7 @@ export default function App() {
       simSquadra.rosa.forEach((r) => {
         const giocatoreReale = giocatoriNuovi.find((g) => g.id === r.giocatoreId);
         const squadraReale = squadreNuove.find((s) => s.id === squadraRealeId);
-        if (!giocatoreReale || giocatoreReale.stato !== "disponibile" || !squadraReale || !puoAssegnare(squadraReale, r.ruolo)) {
+        if (!giocatoreReale || giocatoreReale.stato !== "disponibile" || !squadraReale || !puoAssegnare(squadraReale, r.ruolo, setup.maxPortieri, setup.maxAltri)) {
           saltati++;
           return;
         }
@@ -918,17 +929,18 @@ export default function App() {
     return acc;
   }, [rosaIo]);
 
-  // Non essendoci più slot tattici fissi, i "posti liberi" per reparto derivano
-  // dai limiti di rosa: 4 portieri totali, 40 condivisi tra Dif/Cen/Att.
+  // Non essendoci più slot tattici fissi, i "posti liberi" per reparto derivano dai
+  // limiti di rosa configurati in Setup: portieri totali (setup.maxPortieri), altri
+  // ruoli condivisi tra Dif/Cen/Att (setup.maxAltri).
   const { por: porContatiIo, altri: altriContatiIo } = contaRosa(rosaIo);
   const slotLiberiPerGruppo = useMemo(() => ({
-    POR: Math.max(0, CAP_POR - porContatiIo),
-    DIF: Math.max(0, CAP_ALTRI - altriContatiIo),
-    CEN: Math.max(0, CAP_ALTRI - altriContatiIo),
-    ATT: Math.max(0, CAP_ALTRI - altriContatiIo),
-  }), [porContatiIo, altriContatiIo]);
+    POR: Math.max(0, setup.maxPortieri - porContatiIo),
+    DIF: Math.max(0, setup.maxAltri - altriContatiIo),
+    CEN: Math.max(0, setup.maxAltri - altriContatiIo),
+    ATT: Math.max(0, setup.maxAltri - altriContatiIo),
+  }), [porContatiIo, altriContatiIo, setup.maxPortieri, setup.maxAltri]);
 
-  const slotLiberiTotali = Math.max(0, CAP_POR - porContatiIo) + Math.max(0, CAP_ALTRI - altriContatiIo);
+  const slotLiberiTotali = Math.max(0, setup.maxPortieri - porContatiIo) + Math.max(0, setup.maxAltri - altriContatiIo);
 
   function updateSetup(patch) {
     setState((prev) => {
@@ -973,12 +985,13 @@ export default function App() {
   }
 
   // Assegna un giocatore (mio o di un altro partecipante) alla rosa di una squadra,
-  // rispettando i limiti 4 Por / 40 altri ruoli. Ritorna false se il limite è già raggiunto.
+  // rispettando i limiti min/max portieri e altri ruoli configurati in Setup. Ritorna
+  // false se il limite massimo è già raggiunto.
   function assegnaGiocatore(squadraId, giocatoreId, ruolo, prezzo) {
     let ok = true;
     setState((prev) => {
       const squadra = prev.squadre.find((s) => s.id === squadraId);
-      if (!squadra || !puoAssegnare(squadra, ruolo)) { ok = false; return prev; }
+      if (!squadra || !puoAssegnare(squadra, ruolo, prev.setup.maxPortieri, prev.setup.maxAltri)) { ok = false; return prev; }
       return {
         ...prev,
         giocatori: prev.giocatori.map((g) =>
@@ -1165,10 +1178,9 @@ export default function App() {
           <SetupTab
             setup={setup} updateSetup={updateSetup}
             squadre={squadre} rinominaSquadra={rinominaSquadra}
+            cambiaModulo={cambiaModulo} slots={slots} cambiaRuoloSlot={cambiaRuoloSlot}
+            algoritmi={algoritmi} updateAlgoritmi={updateAlgoritmi}
           />
-        )}
-        {tab === "moduli" && (
-          <ModuliTab setup={setup} cambiaModulo={cambiaModulo} slots={slots} cambiaRuoloSlot={cambiaRuoloSlot} />
         )}
         {tab === "giocatori" && (
           <GiocatoriTab
@@ -1196,7 +1208,7 @@ export default function App() {
           <RosaTab giocatori={giocatori} ioSquadra={ioSquadra} budgetSpeso={budgetSpeso} budgetResiduo={budgetResiduo} annullaAssegnazione={annullaAssegnazione} setup={setup} updateSetup={updateSetup} />
         )}
         {tab === "squadre" && (
-          <SquadreTab squadre={squadre} giocatori={giocatori} />
+          <SquadreTab squadre={squadre} giocatori={giocatori} setup={setup} />
         )}
         {tab === "guida" && (
           <GuidaTab
@@ -1218,9 +1230,6 @@ export default function App() {
             vaiATab={setTab}
           />
         )}
-        {tab === "algoritmi" && (
-          <AlgoritmiTab algoritmi={algoritmi} updateAlgoritmi={updateAlgoritmi} />
-        )}
         {tab === "assistente" && (
           <AssistenteTab setup={setup} squadre={squadre} giocatori={giocatori} algoritmi={algoritmi} />
         )}
@@ -1234,14 +1243,12 @@ export default function App() {
       >
         {[
           { id: "setup", label: "Setup", icon: Settings },
-          { id: "moduli", label: "Moduli", icon: LayoutTemplate },
           { id: "giocatori", label: "Giocatori", icon: ListChecks },
           { id: "asta", label: "Asta Live", icon: Search },
           { id: "rosa", label: "Rosa", icon: LayoutGrid },
           { id: "squadre", label: "Squadre", icon: Users },
           { id: "guida", label: "Guida", icon: BookOpen },
           { id: "simulazione", label: "Simula", icon: Gavel },
-          { id: "algoritmi", label: "Algoritmi", icon: Cpu },
           { id: "assistente", label: "Assistente", icon: Bot },
         ].map(({ id, label, icon: Icon }) => (
           <button
@@ -1276,47 +1283,117 @@ export default function App() {
 }
 
 // ---------- Setup Tab ----------
-function SetupTab({ setup, updateSetup, squadre, rinominaSquadra }) {
+// Blocco espandibile riusabile: header con icona/titolo e chevron, contenuto mostrato solo
+// se aperto. Usato per raggruppare Parametri asta, Moduli e Algoritmi dentro un'unica tab
+// Setup invece di tre schede separate nella nav.
+function AccordionSection({ title, icon: Icon, defaultOpen = false, children }) {
+  const [aperto, setAperto] = useState(defaultOpen);
   return (
-    <div className="space-y-6">
-      <Section title="Parametri asta">
-        <div className="space-y-3">
-          <Field label="Budget totale (cr)">
-            <input
-              type="number" value={setup.budgetTotale}
-              onChange={(e) => updateSetup({ budgetTotale: parseInt(e.target.value) || 0 })}
-              className="input-dark"
-            />
-          </Field>
-          <Field label="Partecipanti">
-            <input
-              type="number" value={setup.numPartecipanti}
-              onChange={(e) => updateSetup({ numPartecipanti: parseInt(e.target.value) || 0 })}
-              className="input-dark"
-            />
-          </Field>
-        </div>
-        <p className="text-xs text-inkdim mt-2">
-          Ogni rosa, compresa la tua, può avere al massimo <span className="text-ink font-semibold">{CAP_POR} portieri</span> e{" "}
-          <span className="text-ink font-semibold">{CAP_ALTRI} giocatori</span> negli altri ruoli.
-        </p>
-      </Section>
+    <div className="bg-panel border border-line rounded-xl overflow-hidden">
+      <button
+        type="button" onClick={() => setAperto((v) => !v)}
+        className="w-full flex items-center justify-between px-3.5 py-3.5"
+      >
+        <span className="flex items-center gap-2 text-sm font-bold">
+          {Icon && <Icon size={19} className="text-emerald-400 shrink-0" />} {title}
+        </span>
+        <ChevronDown size={17} className={`shrink-0 text-inkdim transition-transform ${aperto ? "rotate-180" : ""}`} />
+      </button>
+      {aperto && <div className="px-3.5 pb-4 pt-1 border-t border-line space-y-6">{children}</div>}
+    </div>
+  );
+}
 
-      <Section title={`Squadre partecipanti (${squadre.length})`}>
-        <div className="space-y-1.5">
-          {squadre.map((s) => (
-            <div key={s.id} className="flex items-center gap-2">
-              {s.isMia && <span className="text-[10px] font-bold text-emerald-400 shrink-0 w-6">TU</span>}
+// Un limite min/max (Portieri o Altri ruoli): il minimo è solo un promemoria mostrato in
+// Rosa/Squadre, il massimo è il tetto che puoAssegnare fa davvero rispettare in asta.
+function CampoLimiteRosa({ label, accent, min, max, onChangeMin, onChangeMax }) {
+  return (
+    <div className="bg-inkbg border border-line rounded-lg p-2.5">
+      <div className={`text-[10px] font-bold uppercase mb-1.5 ${accent}`}>{label}</div>
+      <div className="grid grid-cols-2 gap-2">
+        <Field label="Min">
+          <input type="number" min={0} value={min} onChange={(e) => onChangeMin(parseInt(e.target.value) || 0)} className="input-dark" />
+        </Field>
+        <Field label="Max">
+          <input type="number" min={1} value={max} onChange={(e) => onChangeMax(Math.max(1, parseInt(e.target.value) || 1))} className="input-dark" />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
+function SetupTab({
+  setup, updateSetup, squadre, rinominaSquadra,
+  cambiaModulo, slots, cambiaRuoloSlot,
+  algoritmi, updateAlgoritmi,
+}) {
+  return (
+    <div className="space-y-3">
+      <AccordionSection title="Parametri asta" icon={Settings} defaultOpen>
+        <Section title="Impostazioni generali">
+          <div className="space-y-3">
+            <Field label="Budget totale (cr)">
               <input
-                value={s.nome}
-                onChange={(e) => rinominaSquadra(s.id, e.target.value)}
-                className={`input-dark flex-1 ${s.isMia ? "border-emerald-400/40" : ""}`}
+                type="number" value={setup.budgetTotale}
+                onChange={(e) => updateSetup({ budgetTotale: parseInt(e.target.value) || 0 })}
+                className="input-dark"
               />
-            </div>
-          ))}
-        </div>
-        <p className="text-xs text-inkdim mt-2">Rinomina le squadre con i nomi reali dei partecipanti: le userai per assegnare i giocatori presi da altri durante l'asta.</p>
-      </Section>
+            </Field>
+            <Field label="Partecipanti">
+              <input
+                type="number" value={setup.numPartecipanti}
+                onChange={(e) => updateSetup({ numPartecipanti: parseInt(e.target.value) || 0 })}
+                className="input-dark"
+              />
+            </Field>
+          </div>
+        </Section>
+
+        <Section title="Limiti di rosa">
+          <div className="grid grid-cols-2 gap-2">
+            <CampoLimiteRosa
+              label="Portieri" accent="text-amber-400"
+              min={setup.minPortieri} max={setup.maxPortieri}
+              onChangeMin={(v) => updateSetup({ minPortieri: v })}
+              onChangeMax={(v) => updateSetup({ maxPortieri: v })}
+            />
+            <CampoLimiteRosa
+              label="Altri ruoli" accent="text-emerald-400"
+              min={setup.minAltri} max={setup.maxAltri}
+              onChangeMin={(v) => updateSetup({ minAltri: v })}
+              onChangeMax={(v) => updateSetup({ maxAltri: v })}
+            />
+          </div>
+          <p className="text-xs text-inkdim mt-2">
+            Il <span className="text-ink font-semibold">minimo</span> è solo un promemoria (mostrato in Rosa e Squadre, non blocca nulla). Il{" "}
+            <span className="text-ink font-semibold">massimo</span> è il tetto vero: superato quello, l'asta non fa più assegnare giocatori in quel ruolo.
+          </p>
+        </Section>
+
+        <Section title={`Squadre partecipanti (${squadre.length})`}>
+          <div className="space-y-1.5">
+            {squadre.map((s) => (
+              <div key={s.id} className="flex items-center gap-2">
+                {s.isMia && <span className="text-[10px] font-bold text-emerald-400 shrink-0 w-6">TU</span>}
+                <input
+                  value={s.nome}
+                  onChange={(e) => rinominaSquadra(s.id, e.target.value)}
+                  className={`input-dark flex-1 ${s.isMia ? "border-emerald-400/40" : ""}`}
+                />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-inkdim mt-2">Rinomina le squadre con i nomi reali dei partecipanti: le userai per assegnare i giocatori presi da altri durante l'asta.</p>
+        </Section>
+      </AccordionSection>
+
+      <AccordionSection title="Moduli" icon={LayoutTemplate}>
+        <ModuliTab setup={setup} cambiaModulo={cambiaModulo} slots={slots} cambiaRuoloSlot={cambiaRuoloSlot} />
+      </AccordionSection>
+
+      <AccordionSection title="Algoritmi" icon={Cpu}>
+        <AlgoritmiTab algoritmi={algoritmi} updateAlgoritmi={updateAlgoritmi} />
+      </AccordionSection>
     </div>
   );
 }
@@ -1562,7 +1639,7 @@ const TETTO_PERCENTUALE_BUDGET = 0.25;
 
 // Quanti slot di un dato ruolo Mantra prevede il modulo tattico target (usato solo
 // come riferimento strategico in asta: NON limita gli acquisti, che restano vincolati
-// solo da CAP_POR/CAP_ALTRI — vedi contaRosa/puoAssegnare).
+// solo dai limiti max configurati in Setup — vedi contaRosa/puoAssegnare).
 function ruoloSlotCountInModulo(modulo, ruolo) {
   if (ruolo === "Por") return 1;
   const outfield = MODULI[modulo] || MODULI["3-4-3"];
@@ -1675,7 +1752,7 @@ function AstaTab({
 
     // Riserva dinamica per gli altri slot ancora da riempire: più severa a inizio asta
     // (rosa quasi vuota, serve prudenza), più leggera quando restano pochi slot totali.
-    const slotTotali = CAP_POR + CAP_ALTRI;
+    const slotTotali = setup.maxPortieri + setup.maxAltri;
     const percentualeRosaCompleta = 1 - slotLiberiTotali / slotTotali;
     const altriSlotLiberi = Math.max(0, slotLiberiTotali - 1);
     const riserva = Math.round(altriSlotLiberi * (1 + (1 - percentualeRosaCompleta) * 2));
@@ -1721,7 +1798,7 @@ function AstaTab({
 
   function confermaAssegnaIo() {
     if (!selezionato || !ruoloScelto || !ioSquadra) return;
-    if (!puoAssegnare(ioSquadra, ruoloScelto)) return;
+    if (!puoAssegnare(ioSquadra, ruoloScelto, setup.maxPortieri, setup.maxAltri)) return;
     const prezzo = parseInt(prezzoFinale) || 0;
     assegnaGiocatore(ioSquadra.id, selezionato.id, ruoloScelto, prezzo);
     reset();
@@ -1730,7 +1807,7 @@ function AstaTab({
   function confermaAssegnaAltri() {
     if (!selezionato || !squadraScelta || !ruoloScelto) return;
     const squadra = squadre.find((s) => s.id === squadraScelta);
-    if (!puoAssegnare(squadra, ruoloScelto)) return;
+    if (!puoAssegnare(squadra, ruoloScelto, setup.maxPortieri, setup.maxAltri)) return;
     const prezzo = parseInt(prezzoFinale) || 0;
     assegnaGiocatore(squadraScelta, selezionato.id, ruoloScelto, prezzo);
     reset();
@@ -1972,9 +2049,9 @@ function AstaTab({
                   <option key={r} value={r} className="bg-panel">{r} · {RUOLO_LABEL[r]}</option>
                 ))}
               </select>
-              {!puoAssegnare(ioSquadra, ruoloScelto) && (
+              {!puoAssegnare(ioSquadra, ruoloScelto, setup.maxPortieri, setup.maxAltri) && (
                 <p className="text-xs text-rose-400 flex items-center gap-1.5">
-                  <AlertTriangle size={16} /> Limite di rosa raggiunto ({ruoloScelto === "Por" ? `${CAP_POR} portieri` : `${CAP_ALTRI} giocatori negli altri ruoli`}).
+                  <AlertTriangle size={16} /> Limite di rosa raggiunto ({ruoloScelto === "Por" ? `${setup.maxPortieri} portieri` : `${setup.maxAltri} giocatori negli altri ruoli`}).
                 </p>
               )}
               <label className="text-xs text-inkdim block">Prezzo finale pagato</label>
@@ -1991,7 +2068,7 @@ function AstaTab({
               </div>
               <QuickBidButtons value={prezzoFinale} onChange={setPrezzoFinale} />
               <div className="flex gap-2 pt-1">
-                <button onClick={confermaAssegnaIo} disabled={!puoAssegnare(ioSquadra, ruoloScelto)} className="btn-primary flex-1 disabled:opacity-40">Conferma acquisto</button>
+                <button onClick={confermaAssegnaIo} disabled={!puoAssegnare(ioSquadra, ruoloScelto, setup.maxPortieri, setup.maxAltri)} className="btn-primary flex-1 disabled:opacity-40">Conferma acquisto</button>
                 <button onClick={() => setModalitaAssegna(null)} className="btn-secondary px-4">Annulla</button>
               </div>
             </div>
@@ -2009,7 +2086,7 @@ function AstaTab({
                   <option key={r} value={r} className="bg-panel">{r} · {RUOLO_LABEL[r]}</option>
                 ))}
               </select>
-              {!puoAssegnare(squadre.find((s) => s.id === squadraScelta), ruoloScelto) && (
+              {!puoAssegnare(squadre.find((s) => s.id === squadraScelta), ruoloScelto, setup.maxPortieri, setup.maxAltri) && (
                 <p className="text-xs text-rose-400 flex items-center gap-1.5">
                   <AlertTriangle size={16} /> Quella squadra ha già raggiunto il limite per questo ruolo.
                 </p>
@@ -2028,7 +2105,7 @@ function AstaTab({
               </div>
               <QuickBidButtons value={prezzoFinale} onChange={setPrezzoFinale} />
               <div className="flex gap-2 pt-1">
-                <button onClick={confermaAssegnaAltri} disabled={!puoAssegnare(squadre.find((s) => s.id === squadraScelta), ruoloScelto)} className="btn-primary flex-1 disabled:opacity-40">Conferma</button>
+                <button onClick={confermaAssegnaAltri} disabled={!puoAssegnare(squadre.find((s) => s.id === squadraScelta), ruoloScelto, setup.maxPortieri, setup.maxAltri)} className="btn-primary flex-1 disabled:opacity-40">Conferma</button>
                 <button onClick={() => setModalitaAssegna(null)} className="btn-secondary px-4">Annulla</button>
               </div>
             </div>
@@ -2695,7 +2772,7 @@ function PannelloInteresseAvversari({ altreSquadre, gById, ruolo, gruppo, setup,
 
   const righe = useMemo(() => {
     return altreSquadre
-      .map((s) => ({ squadra: s, ...interesseSquadraPerRuolo(analizzaSquadra(s, gById), ruolo, gruppo, setup) }))
+      .map((s) => ({ squadra: s, ...interesseSquadraPerRuolo(analizzaSquadra(s, gById, setup.maxPortieri, setup.maxAltri), ruolo, gruppo, setup) }))
       .sort((a, b) => LIVELLO_INTERESSE_ORDINE[b.livello] - LIVELLO_INTERESSE_ORDINE[a.livello] || b.residuoGruppo - a.residuoGruppo);
   }, [altreSquadre, gById, ruolo, gruppo, setup]);
 
@@ -2798,18 +2875,20 @@ function RosaTab({ giocatori, ioSquadra, budgetSpeso, budgetResiduo, annullaAsse
       <div className="grid grid-cols-2 gap-2">
         <div className="bg-panel border border-line rounded-lg p-2.5">
           <div className="flex items-center justify-between text-xs text-inkdim mb-1">
-            <span>Portieri</span><span className="font-mono">{porCount}/{CAP_POR}</span>
+            <span>Portieri {porCount < setup.minPortieri && <span className="text-amber-400">(min {setup.minPortieri})</span>}</span>
+            <span className="font-mono">{porCount}/{setup.maxPortieri}</span>
           </div>
           <div className="h-1.5 rounded-full bg-inkbg overflow-hidden">
-            <div className={`h-full ${porCount >= CAP_POR ? "bg-rose-400" : "bg-amber-400"}`} style={{ width: `${Math.min(100, (porCount / CAP_POR) * 100)}%` }} />
+            <div className={`h-full ${porCount >= setup.maxPortieri ? "bg-rose-400" : porCount >= setup.minPortieri ? "bg-emerald-400" : "bg-amber-400"}`} style={{ width: `${Math.min(100, (porCount / setup.maxPortieri) * 100)}%` }} />
           </div>
         </div>
         <div className="bg-panel border border-line rounded-lg p-2.5">
           <div className="flex items-center justify-between text-xs text-inkdim mb-1">
-            <span>Altri ruoli</span><span className="font-mono">{altriCount}/{CAP_ALTRI}</span>
+            <span>Altri ruoli {altriCount < setup.minAltri && <span className="text-amber-400">(min {setup.minAltri})</span>}</span>
+            <span className="font-mono">{altriCount}/{setup.maxAltri}</span>
           </div>
           <div className="h-1.5 rounded-full bg-inkbg overflow-hidden">
-            <div className={`h-full ${altriCount >= CAP_ALTRI ? "bg-rose-400" : "bg-emerald-400"}`} style={{ width: `${Math.min(100, (altriCount / CAP_ALTRI) * 100)}%` }} />
+            <div className={`h-full ${altriCount >= setup.maxAltri ? "bg-rose-400" : altriCount >= setup.minAltri ? "bg-emerald-400" : "bg-amber-400"}`} style={{ width: `${Math.min(100, (altriCount / setup.maxAltri) * 100)}%` }} />
           </div>
         </div>
       </div>
@@ -2925,9 +3004,9 @@ function RuoliModuliPanel({ rosa, gById, compatto, nascondiRuoli }) {
 }
 // Analisi generica di una squadra (usata dalla tab Squadre e dal pannello "Interesse
 // avversari" in Asta Live): crediti spesi/residui, anche spalmati per reparto, conteggio
-// giocatori per reparto/ruolo Mantra, slot di rosa ancora liberi (Por/altri, coi CAP
-// dell'asta), indice di forza rosa ed efficienza di spesa in base al Valore Reale.
-function analizzaSquadra(s, gById) {
+// giocatori per reparto/ruolo Mantra, slot di rosa ancora liberi (Por/altri, coi limiti
+// max configurati in Setup), indice di forza rosa ed efficienza di spesa dal Valore Reale.
+function analizzaSquadra(s, gById, maxPor = CAP_POR, maxAltri = CAP_ALTRI) {
   const speso = s.rosa.reduce((acc, r) => acc + (r.prezzo || 0), 0);
   const residuo = s.budgetTotale - speso;
   const conteggio = { POR: 0, DIF: 0, CEN: 0, ATT: 0 };
@@ -2942,7 +3021,7 @@ function analizzaSquadra(s, gById) {
   });
   const conteggioRuoli = contaRuoliEleggibili(s.rosa, gById);
   const { por: porCount, altri: altriCount } = contaRosa(s.rosa);
-  const slotResidui = Math.max(0, CAP_POR - porCount) + Math.max(0, CAP_ALTRI - altriCount);
+  const slotResidui = Math.max(0, maxPor - porCount) + Math.max(0, maxAltri - altriCount);
   const creditoMedioSlot = slotResidui > 0 ? residuo / slotResidui : 0;
   const efficienza = speso > 0 ? valoreRosaTotale / speso : null;
   const repartiScoperti = (["DIF", "CEN", "ATT"]).filter((g) => conteggio[g] === 0);
@@ -2964,7 +3043,7 @@ const LIVELLO_INTERESSE_CLS = {
 
 function interesseSquadraPerRuolo(analisi, ruolo, gruppo, setup) {
   const { squadra, residuo, conteggio, spesoPerGruppo, conteggioRuoli, porCount, altriCount } = analisi;
-  const slotLiberiRuolo = ruolo === "Por" ? Math.max(0, CAP_POR - porCount) : Math.max(0, CAP_ALTRI - altriCount);
+  const slotLiberiRuolo = ruolo === "Por" ? Math.max(0, setup.maxPortieri - porCount) : Math.max(0, setup.maxAltri - altriCount);
   const giaPresi = conteggioRuoli[ruolo] || 0;
 
   if (slotLiberiRuolo === 0 || residuo <= 0) {
@@ -2976,7 +3055,7 @@ function interesseSquadraPerRuolo(analisi, ruolo, gruppo, setup) {
   const creditoMedioSlot = Math.round(residuoGruppo / slotLiberiRuolo);
   // Credito medio "normale" per slot, come metro di paragone: budget totale diviso
   // tutti gli slot di rosa possibili (stesso per tutte le squadre, stesso setup.budgetTotale).
-  const baselineSlot = (setup.budgetTotale || squadra.budgetTotale) / (CAP_POR + CAP_ALTRI);
+  const baselineSlot = (setup.budgetTotale || squadra.budgetTotale) / (setup.maxPortieri + setup.maxAltri);
 
   let livello = "medio";
   if (residuoGruppo <= 0 || giaPresi >= 3) livello = "basso";
@@ -3013,11 +3092,14 @@ function testoStrategiaInteresse(fattoreRuoloMio, numInteressati, numAltre) {
 // di efficienza di spesa (valore reale ottenuto per credito speso), utile per capire
 // durante l'asta chi ha comprato bene e chi rischia di dover rilanciare forte
 // sui reparti ancora scoperti.
-function SquadreTab({ squadre, giocatori }) {
+function SquadreTab({ squadre, giocatori, setup }) {
   const gById = Object.fromEntries(giocatori.map((g) => [g.id, g]));
   const [espansa, setEspansa] = useState(null); // id squadra con pannello ruoli/moduli aperto
 
-  const analisiSquadre = useMemo(() => squadre.map((s) => analizzaSquadra(s, gById)), [squadre, giocatori]);
+  const analisiSquadre = useMemo(
+    () => squadre.map((s) => analizzaSquadra(s, gById, setup.maxPortieri, setup.maxAltri)),
+    [squadre, giocatori, setup.maxPortieri, setup.maxAltri]
+  );
 
   const ranking = useMemo(
     () => [...analisiSquadre].sort((a, b) => b.valoreRosaTotale - a.valoreRosaTotale).map((a) => a.squadra.id),
@@ -3119,7 +3201,7 @@ function SquadreTab({ squadre, giocatori }) {
             </div>
 
             <div className="text-[10px] text-inkdim font-mono mb-1.5">
-              {a.porCount}/{CAP_POR} portieri · {a.altriCount}/{CAP_ALTRI} altri ruoli · ~{Math.round(a.creditoMedioSlot)} cr/slot residuo
+              {a.porCount}/{setup.maxPortieri} portieri · {a.altriCount}/{setup.maxAltri} altri ruoli · ~{Math.round(a.creditoMedioSlot)} cr/slot residuo
             </div>
 
             {a.repartiScoperti.length > 0 && (
