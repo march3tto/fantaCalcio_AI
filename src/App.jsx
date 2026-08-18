@@ -1822,13 +1822,12 @@ function AstaTab({
     <div className="space-y-4">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={19} className="absolute left-3 top-1/2 -translate-y-1/2 text-inkdim" />
           <input
             ref={inputRef}
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSelezionato(null); }}
             placeholder="Nome giocatore chiamato all'asta..."
-            className="input-dark w-full pl-9 pr-10"
+            className="input-dark w-full pr-10"
             autoFocus
           />
           {query && !selezionato ? (
@@ -3936,9 +3935,10 @@ function ConfirmModal({ title, text, onCancel, onConfirm }) {
 // Tailwind non supporta @apply senza config custom qui: definiamo classi via componenti inline
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `
-  .input-dark { background:#000000; border:1px solid #374151; border-radius:0.5rem; padding:0.55rem 0.7rem; font-size:0.875rem; color:#FFFFFF; outline:none; }
+  .input-dark { background:#FFFFFF; border:1px solid #374151; border-radius:0.5rem; padding:0.55rem 0.7rem; font-size:16px; font-weight:700; color:#3B82F6; outline:none; }
   .input-dark:focus { border-color:#10B981; }
-  .input-dark option { background:#000000; color:#FFFFFF; }
+  .input-dark option { background:#FFFFFF; color:#3B82F6; font-weight:700; }
+  .input-dark::placeholder { color:#9CA3AF; font-weight:400; }
   .btn-primary { background:#10B981; color:#FFFFFF; font-weight:700; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
   .btn-primary:active { transform:scale(0.97); }
   .btn-secondary { background:#F3F4F6; border:1px solid #D1D5DB; color:#111827; font-weight:600; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
