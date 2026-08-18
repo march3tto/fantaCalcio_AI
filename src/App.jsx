@@ -155,7 +155,7 @@ const ASSISTENTE_MODELLI = [
 
 // Limiti di rosa (validi per ogni squadra, compresa la propria)
 const CAP_POR = 4;
-const CAP_ALTRI = 50;
+const CAP_ALTRI = 40;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
