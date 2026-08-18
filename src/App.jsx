@@ -2,13 +2,31 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import * as XLSX from "xlsx";
 import {
   Search, Plus, Trash2, Check, X, Wallet, ListChecks,
-  LayoutGrid, Settings, RotateCcw, AlertTriangle, Undo2, Upload, ChevronDown, FileSpreadsheet,
-  Star, Users, BookOpen, Heart, Target, TrendingUp, TrendingDown, ShieldAlert, ThumbsUp, ThumbsDown, Mic, LayoutTemplate, Gavel, Trophy
+  LayoutGrid, Settings, RotateCcw, AlertTriangle, Undo2, Upload, Download, ChevronDown, FileSpreadsheet,
+  Star, Users, BookOpen, Heart, Target, TrendingUp, TrendingDown, ShieldAlert, ThumbsUp, ThumbsDown, Mic, LayoutTemplate, Gavel, Trophy, Cpu
 } from "lucide-react";
-// guideDatabase incorporato direttamente nel file (nessun import esterno: negli Artifact
-// non è possibile importare file .json separati). Per aggiornarlo, sostituisci il contenuto
-// della costante qui sotto con il JSON completo di guideDatabase.json.
-const guideDatabase = { "atalanta": { "teamId": "atalanta", "teamName": "Atalanta", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Maurizio Sarri", "rating": { "attacco": 4, "difesa": 4 }, "titolari": [{ "nome": "Carnesecchi", "ruoli": ["Por"] }, { "nome": "Bernasconi", "ruoli": ["Ds", "E"] }, { "nome": "Kolasinac", "ruoli": ["Dc", "Ds"] }, { "nome": "Scalvini", "ruoli": ["Dc"] }, { "nome": "Zappacosta", "ruoli": ["Dd", "E"] }, { "nome": "Ederson D.S.", "ruoli": ["M", "C"] }, { "nome": "Gaetano", "ruoli": ["M", "C"] }, { "nome": "Samardzic", "ruoli": ["C", "T"] }, { "nome": "Raspadori", "ruoli": ["A"] }, { "nome": "Scamacca", "ruoli": ["Pc"] }, { "nome": "De Ketelaere", "ruoli": ["A"] }], "ruoliChiave": { "descrizione": "Modulo Sarri: due esterni offensivi (W), doppio centrale davanti alla difesa, due centrali difensivi centrali (Dc) affiancati da terzini con licenza limitata (Ds/Dd)", "slots": ["W", "Pc", "W", "C", "M", "C", "Ds", "Dc", "Dc", "Dd", "Por"] }, "puntiChiave": [{ "testo": "Valorizzazione esterni d'attacco", "sentiment": "positive" }, { "testo": "Solidità difensiva", "sentiment": "positive" }, { "testo": "Scarso impiego del turnover", "sentiment": "neutral" }, { "testo": "Scarsa libertà ai terzini", "sentiment": "negative" }], "ballottaggi": [{ "giocatoreA": { "nome": "Scamacca", "ruoli": ["Pc"], "percentuale": 51 }, "giocatoreB": { "nome": "Krstovic", "ruoli": ["Pc"], "percentuale": 49 } }, { "giocatoreA": { "nome": "Gaetano", "ruoli": ["M", "C"], "percentuale": 51 }, "giocatoreB": { "nome": "De Roon", "ruoli": ["M", "C"], "percentuale": 49 } }, { "giocatoreA": { "nome": "Zappacosta", "ruoli": ["Dd", "E"], "percentuale": 55 }, "giocatoreB": { "nome": "Bellanova", "ruoli": ["Dd", "E"], "percentuale": 45 } }, { "giocatoreA": { "nome": "Kolasinac", "ruoli": ["Dc", "Ds"], "percentuale": 55 }, "giocatoreB": { "nome": "Hien", "ruoli": ["Dc"], "percentuale": 45 } }, { "giocatoreA": { "nome": "Samardzic", "ruoli": ["C", "T"], "percentuale": 51 }, "giocatoreB": { "nome": "Pasalic", "ruoli": ["C", "T"], "percentuale": 49 } }, { "giocatoreA": { "nome": "Bernasconi", "ruoli": ["Ds", "E", "B"], "percentuale": 51 }, "giocatoreB": { "nome": "Ahanor", "ruoli": ["Ds", "E"], "percentuale": 49 } }], "specialisti": { "rigoristi": [{ "nome": "Scamacca", "ruoli": ["Pc"] }, { "nome": "Samardzic", "ruoli": ["C", "T"] }, { "nome": "Ederson D.S.", "ruoli": ["M", "C"] }], "punizioni": [{ "nome": "Samardzic", "ruoli": ["C", "T"] }, { "nome": "Gaetano", "ruoli": ["M", "C"] }], "angoli": [{ "nome": "Samardzic", "ruoli": ["C", "T"] }, { "nome": "Gaetano", "ruoli": ["M", "C"] }, { "nome": "Bernasconi", "ruoli": ["Ds", "E"] }] }, "valorizzati": [{ "nome": "Scalvini", "ruoli": ["Dc"], "motivi": ["Difesa di Sarri solida"] }, { "nome": "Raspadori", "ruoli": ["A"], "motivi": ["Adattabile anche al centro", "Esterni di Sarri prolifici", "Rotazioni elevate nel suo ruolo"] }], "penalizzati": [{ "nome": "De Roon", "ruoli": ["M", "C"], "motivi": ["Con Sarri posizionamento più arretrato"] }, { "nome": "Kossounou", "ruoli": ["Dc", "Dd"], "motivi": ["Parte indietro nelle gerarchie del mister"] }], "giovaneDaSeguire": { "nome": "Bernasconi", "ruoli": ["Ds", "E"], "motivo": "Esterno equilibrato in entrambe le fasi" }, "scommessa": { "nome": "Samardzic", "ruoli": ["C", "T"], "motivo": "Sarri può rigenerarlo" } }, "bologna": { "teamId": "bologna", "teamName": "Bologna", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Domenico Tedesco", "rating": { "attacco": 4, "difesa": 4 }, "titolari": [{ "nome": "Skorupski", "ruoli": ["Por"] }, { "nome": "Miranda J.", "ruoli": ["Ds", "E"] }, { "nome": "Lucumì", "ruoli": ["Dc"] }, { "nome": "Vitik", "ruoli": ["Dc"] }, { "nome": "Zortea", "ruoli": ["Dd", "E"] }, { "nome": "Ferguson", "ruoli": ["M", "C"] }, { "nome": "Pobega", "ruoli": ["M", "C"] }, { "nome": "Bernardeschi", "ruoli": ["W", "T"] }, { "nome": "Rowe", "ruoli": ["W", "T"] }, { "nome": "Dovbyk", "ruoli": ["Pc"] }, { "nome": "Orsolini", "ruoli": ["W", "A"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "cagliari": { "teamId": "cagliari", "teamName": "Cagliari", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Fabio Pisacane", "rating": { "attacco": 3, "difesa": 3 }, "titolari": [{ "nome": "Caprile", "ruoli": ["Por"] }, { "nome": "Obert", "ruoli": ["B", "Ds", "E"] }, { "nome": "Rodriguez Ju.", "ruoli": ["Dc", "Ds"] }, { "nome": "Mina", "ruoli": ["Dc"] }, { "nome": "Zè Pedro", "ruoli": ["Dc", "Dd"] }, { "nome": "Romano", "ruoli": ["M", "C"] }, { "nome": "Winks", "ruoli": ["M", "C"] }, { "nome": "Adopo", "ruoli": ["M", "C"] }, { "nome": "Fazzini", "ruoli": ["C", "T"] }, { "nome": "Felici", "ruoli": ["W"] }, { "nome": "Borrelli", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "como": { "teamId": "como", "teamName": "Como", "updatedAt": "08/08/26", "modulo": "4-2-3-1", "allenatore": "Cesc Fabregas", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Butez", "ruoli": ["Por"] }, { "nome": "Valle", "ruoli": ["Ds", "E"] }, { "nome": "Kempf", "ruoli": ["Dc"] }, { "nome": "Ramon", "ruoli": ["Dc"] }, { "nome": "Couto", "ruoli": ["Dd", "E"] }, { "nome": "Da Cunha", "ruoli": ["C", "T"] }, { "nome": "Perrone", "ruoli": ["M", "C"] }, { "nome": "Baturina", "ruoli": ["T"] }, { "nome": "Paz N.", "ruoli": ["T", "A"] }, { "nome": "Diao", "ruoli": ["W", "A"] }, { "nome": "Douvikas", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "fiorentina": { "teamId": "fiorentina", "teamName": "Fiorentina", "updatedAt": "08/08/26", "modulo": "4-3-2-1", "allenatore": "Fabio Grosso", "rating": { "attacco": 3, "difesa": 3 }, "titolari": [{ "nome": "De Gea", "ruoli": ["Por"] }, { "nome": "Valdepenas", "ruoli": ["Dc", "Ds"] }, { "nome": "Viery", "ruoli": ["Dc", "Ds"] }, { "nome": "Dragusin", "ruoli": ["Dc"] }, { "nome": "Jimenez A.", "ruoli": ["Ds", "Dd", "E"] }, { "nome": "Ndour", "ruoli": ["C"] }, { "nome": "Fagioli", "ruoli": ["M", "C"] }, { "nome": "Oulai", "ruoli": ["M", "C"] }, { "nome": "Mastantuono", "ruoli": ["W", "T"] }, { "nome": "Atta", "ruoli": ["C", "T"] }, { "nome": "Kean", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "frosinone": { "teamId": "frosinone", "teamName": "Frosinone", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Massimiliano Alvini", "rating": { "attacco": 3, "difesa": 2 }, "titolari": [{ "nome": "Palmisani", "ruoli": ["Por"] }, { "nome": "Bracaglia", "ruoli": ["Dc", "Ds"] }, { "nome": "Monterisi", "ruoli": ["Dc"] }, { "nome": "Akpoguma", "ruoli": ["Dc"] }, { "nome": "Oyono A.", "ruoli": ["Dd", "E"] }, { "nome": "Koutsoupias", "ruoli": ["C"] }, { "nome": "Calò", "ruoli": ["M", "C"] }, { "nome": "El Azzouzi A.", "ruoli": ["M", "C"] }, { "nome": "Zerbin", "ruoli": ["W"] }, { "nome": "Ghedjemis", "ruoli": ["W", "A"] }, { "nome": "Raimondo", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "genoa": { "teamId": "genoa", "teamName": "Genoa", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Daniele De Rossi", "rating": { "attacco": 3, "difesa": 3 }, "titolari": [{ "nome": "Bijlow", "ruoli": ["Por"] }, { "nome": "Vasquez", "ruoli": ["Dc", "Ds"] }, { "nome": "Ostigard", "ruoli": ["Dc"] }, { "nome": "Marcandalli", "ruoli": ["Dc"] }, { "nome": "Mitaj", "ruoli": ["Ds", "E"] }, { "nome": "Frendrup", "ruoli": ["M", "C"] }, { "nome": "Sow", "ruoli": ["M", "C"] }, { "nome": "Norton-Cuffy", "ruoli": ["Dd", "E"] }, { "nome": "Vitinha O.", "ruoli": ["A"] }, { "nome": "Baldanzi", "ruoli": ["T"] }, { "nome": "Colombo", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "inter": { "teamId": "inter", "teamName": "Inter", "updatedAt": "08/08/26", "modulo": "3-5-2", "allenatore": "Cristian Chivu", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Martinez Jo.", "ruoli": ["Por"] }, { "nome": "Bastoni", "ruoli": ["Dc"] }, { "nome": "Stones", "ruoli": ["Dc"] }, { "nome": "Akanji", "ruoli": ["Dc"] }, { "nome": "Dimarco", "ruoli": ["E", "W"] }, { "nome": "Zielinski", "ruoli": ["C"] }, { "nome": "Calhanoglu", "ruoli": ["M", "C"] }, { "nome": "Barella", "ruoli": ["C"] }, { "nome": "Diouf", "ruoli": ["E", "C"] }, { "nome": "Thuram", "ruoli": ["Pc"] }, { "nome": "Martinez L.", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "juventus": { "teamId": "juventus", "teamName": "Juventus", "updatedAt": "08/08/26", "modulo": "4-2-3-1", "allenatore": "Luciano Spalletti", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Di Gregorio", "ruoli": ["Por"] }, { "nome": "Cambiaso", "ruoli": ["Ds", "Dd", "E"] }, { "nome": "Kelly L.", "ruoli": ["Dc", "Ds"] }, { "nome": "Bremer", "ruoli": ["Dc"] }, { "nome": "Kalulu", "ruoli": ["Dc", "Dd"] }, { "nome": "Locatelli", "ruoli": ["M", "C"] }, { "nome": "Thuram K.", "ruoli": ["C"] }, { "nome": "Yildiz", "ruoli": ["A"] }, { "nome": "McKennie", "ruoli": ["C"] }, { "nome": "Alajbegovic", "ruoli": ["W", "T"] }, { "nome": "Kolo Muani", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "lazio": { "teamId": "lazio", "teamName": "Lazio", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Gennaro Gattuso", "rating": { "attacco": 4, "difesa": 4 }, "titolari": [{ "nome": "Mandas", "ruoli": ["Por"] }, { "nome": "Pedraza", "ruoli": ["Ds", "E"] }, { "nome": "Romagnoli", "ruoli": ["Dc"] }, { "nome": "Doekhi", "ruoli": ["Dc"] }, { "nome": "Marusic", "ruoli": ["Ds", "Dd", "E"] }, { "nome": "Dele-Bashiru", "ruoli": ["C", "T"] }, { "nome": "Rovella", "ruoli": ["M", "C"] }, { "nome": "Taylor K.", "ruoli": ["C", "T"] }, { "nome": "Zaccagni", "ruoli": ["W", "A"] }, { "nome": "Isaksen", "ruoli": ["W", "A"] }, { "nome": "Noslin", "ruoli": ["A"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "lecce": { "teamId": "lecce", "teamName": "Lecce", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Eusebio Di Francesco", "rating": { "attacco": 2, "difesa": 3 }, "titolari": [{ "nome": "Falcone", "ruoli": ["Por"] }, { "nome": "Gallo", "ruoli": ["Ds", "E"] }, { "nome": "Siebert", "ruoli": ["Dc"] }, { "nome": "Tiago Gabriel", "ruoli": ["Dc"] }, { "nome": "Veiga D.", "ruoli": ["Dd", "E"] }, { "nome": "Gandelman", "ruoli": ["C", "T"] }, { "nome": "Berisha M.", "ruoli": ["C", "T"] }, { "nome": "Coulibaly L.", "ruoli": ["M", "C"] }, { "nome": "N'Dri", "ruoli": ["W", "A"] }, { "nome": "Pierotti", "ruoli": ["W"] }, { "nome": "Geubbels", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "milan": { "teamId": "milan", "teamName": "Milan", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Ruben Amorim", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Maignan", "ruoli": ["Por"] }, { "nome": "Pavlovic", "ruoli": ["Dc"] }, { "nome": "Gabbia", "ruoli": ["Dc"] }, { "nome": "Gila", "ruoli": ["Dc"] }, { "nome": "Bartesaghi", "ruoli": ["Ds", "E"] }, { "nome": "Modric", "ruoli": ["M", "C"] }, { "nome": "Rabiot", "ruoli": ["C", "T"] }, { "nome": "Saelemaekers", "ruoli": ["E", "W"] }, { "nome": "Leao", "ruoli": ["A"] }, { "nome": "Pulisic", "ruoli": ["T", "A"] }, { "nome": "Ramos G.", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "monza": { "teamId": "monza", "teamName": "Monza", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Ivan Jurić", "rating": { "attacco": 2, "difesa": 2 }, "titolari": [{ "nome": "Thiam", "ruoli": ["Por"] }, { "nome": "Carboni A.", "ruoli": ["Dc", "Ds"] }, { "nome": "Delli Carri", "ruoli": ["Dc"] }, { "nome": "Kouadio", "ruoli": ["Dc", "Dd"] }, { "nome": "Mangas", "ruoli": ["Ds", "E"] }, { "nome": "Pessina", "ruoli": ["M", "C"] }, { "nome": "Akinsanmiro", "ruoli": ["C"] }, { "nome": "Birindelli", "ruoli": ["Ds", "Dd", "E"] }, { "nome": "Mota", "ruoli": ["A"] }, { "nome": "Colpani", "ruoli": ["T"] }, { "nome": "Cutrone", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "napoli": { "teamId": "napoli", "teamName": "Napoli", "updatedAt": "08/08/26", "modulo": "4-3-3", "allenatore": "Massimiliano Allegri", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Meret", "ruoli": ["Por"] }, { "nome": "Spinazzola", "ruoli": ["Ds", "E"] }, { "nome": "Marin R.", "ruoli": ["Dc"] }, { "nome": "Rrahmani", "ruoli": ["Dc"] }, { "nome": "Di Lorenzo", "ruoli": ["Dd", "E"] }, { "nome": "McTominay", "ruoli": ["C", "T"] }, { "nome": "Lobotka", "ruoli": ["M", "C"] }, { "nome": "De Bruyne", "ruoli": ["T"] }, { "nome": "Santos A.", "ruoli": ["W", "A"] }, { "nome": "Neres", "ruoli": ["W", "A"] }, { "nome": "Hojlund", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "parma": { "teamId": "parma", "teamName": "Parma", "updatedAt": "08/08/26", "modulo": "3-5-2", "allenatore": "Carlos Cuesta", "rating": { "attacco": 2, "difesa": 3 }, "titolari": [{ "nome": "Corvi", "ruoli": ["Por"] }, { "nome": "Valenti", "ruoli": ["Dc"] }, { "nome": "Circati", "ruoli": ["Dc"] }, { "nome": "Troilo", "ruoli": ["Dc"] }, { "nome": "Valeri", "ruoli": ["Ds", "E"] }, { "nome": "Delprato", "ruoli": ["B", "Dd", "E"] }, { "nome": "Nicolussi Cav.", "ruoli": ["M", "C"] }, { "nome": "Keita M.", "ruoli": ["M", "C"] }, { "nome": "Bernabè", "ruoli": ["C"] }, { "nome": "Pellegrino M.", "ruoli": ["Pc"] }, { "nome": "Tourè E.", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "roma": { "teamId": "roma", "teamName": "Roma", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Gian Piero Gasperini", "rating": { "attacco": 5, "difesa": 5 }, "titolari": [{ "nome": "Svilar", "ruoli": ["Por"] }, { "nome": "Koulierakis", "ruoli": ["Dc"] }, { "nome": "N'Dicka", "ruoli": ["Dc"] }, { "nome": "Mancini", "ruoli": ["Dc"] }, { "nome": "Wesley", "ruoli": ["E"] }, { "nome": "Konè M.", "ruoli": ["M", "C"] }, { "nome": "Cristante", "ruoli": ["M", "C"] }, { "nome": "Rensch", "ruoli": ["B", "Dd", "E"] }, { "nome": "Dybala", "ruoli": ["A"] }, { "nome": "Soulè", "ruoli": ["A"] }, { "nome": "Malen", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "sassuolo": { "teamId": "sassuolo", "teamName": "Sassuolo", "updatedAt": "08/08/26", "modulo": "4-2-3-1", "allenatore": "Alberto Aquilani", "rating": { "attacco": 3, "difesa": 3 }, "titolari": [{ "nome": "Muric", "ruoli": ["Por"] }, { "nome": "Doig", "ruoli": ["Ds", "E"] }, { "nome": "Idzes", "ruoli": ["Dc"] }, { "nome": "Walukiewicz", "ruoli": ["Dc", "Dd"] }, { "nome": "Missori", "ruoli": ["Dd", "E"] }, { "nome": "Lipani", "ruoli": ["M", "C"] }, { "nome": "Matic", "ruoli": ["M", "C"] }, { "nome": "Laurientè", "ruoli": ["A"] }, { "nome": "Thorstvedt", "ruoli": ["C", "T"] }, { "nome": "Berardi", "ruoli": ["A"] }, { "nome": "Pinamonti", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "torino": { "teamId": "torino", "teamName": "Torino", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Ignazio Abate", "rating": { "attacco": 3, "difesa": 2 }, "titolari": [{ "nome": "Paleari", "ruoli": ["Por"] }, { "nome": "Comuzzo", "ruoli": ["Dc"] }, { "nome": "Coco", "ruoli": ["Dc"] }, { "nome": "Ismajli", "ruoli": ["Dc"] }, { "nome": "Cacciamani", "ruoli": ["E", "W"] }, { "nome": "Fitz-Jim", "ruoli": ["M", "C"] }, { "nome": "Casadei", "ruoli": ["C", "T"] }, { "nome": "Pedersen", "ruoli": ["Dd", "E"] }, { "nome": "Vlasic", "ruoli": ["T"] }, { "nome": "Oristanio", "ruoli": ["W", "T"] }, { "nome": "Simeone", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "udinese": { "teamId": "udinese", "teamName": "Udinese", "updatedAt": "08/08/26", "modulo": "3-4-2-1", "allenatore": "Kosta Runjaic", "rating": { "attacco": 3, "difesa": 3 }, "titolari": [{ "nome": "Okoye", "ruoli": ["Por"] }, { "nome": "Solet", "ruoli": ["Dc"] }, { "nome": "Kristensen T.", "ruoli": ["Dc", "Dd"] }, { "nome": "Kabasele", "ruoli": ["Dc"] }, { "nome": "Kamara H.", "ruoli": ["Ds", "E"] }, { "nome": "Karlstrom", "ruoli": ["M", "C"] }, { "nome": "Piotrowski", "ruoli": ["M", "C"] }, { "nome": "Vojvoda", "ruoli": ["Dd", "E"] }, { "nome": "Ekkelenkamp", "ruoli": ["C", "T"] }, { "nome": "Zaniolo", "ruoli": ["T", "A"] }, { "nome": "Davis K.", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null }, "venezia": { "teamId": "venezia", "teamName": "Venezia", "updatedAt": "08/08/26", "modulo": "3-5-2", "allenatore": "Giovanni Stroppa", "rating": { "attacco": 3, "difesa": 2 }, "titolari": [{ "nome": "Stankovic F.", "ruoli": ["Por"] }, { "nome": "Moreno M.", "ruoli": ["Dc"] }, { "nome": "Bella-Kotchap", "ruoli": ["Dc"] }, { "nome": "Schingtienne", "ruoli": ["Dc"] }, { "nome": "Haps", "ruoli": ["Ds", "E"] }, { "nome": "Correia T.", "ruoli": ["Dd", "E"] }, { "nome": "Sohm", "ruoli": ["C"] }, { "nome": "Busio", "ruoli": ["M", "C"] }, { "nome": "Basic", "ruoli": ["M", "C"] }, { "nome": "Yeboah J.", "ruoli": ["A"] }, { "nome": "Adams A.", "ruoli": ["Pc"] }], "ruoliChiave": { "descrizione": null, "slots": [] }, "puntiChiave": [], "ballottaggi": [], "specialisti": { "rigoristi": [], "punizioni": [], "angoli": [] }, "valorizzati": [], "penalizzati": [], "giovaneDaSeguire": null, "scommessa": null } };
+import guideDatabaseDefault from "./guideDatabase.json";
+
+// guideDatabase parte dal file in bundle (src/guideDatabase.json) ma può essere
+// aggiornato a runtime dalla tab Guida (upload di un JSON più recente): il binding
+// è mutabile e l'eventuale aggiornamento viene salvato in localStorage così resta
+// attivo anche dopo un refresh. Vedi GUIDA_OVERRIDE_KEY / useGuidaDatabase più sotto.
+const GUIDA_OVERRIDE_KEY = "fantacalcio-guida-override";
+
+function caricaGuidaOverride() {
+  try {
+    const raw = localStorage.getItem(GUIDA_OVERRIDE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.dati && typeof parsed.dati === "object") return parsed;
+  } catch (e) {
+    // localStorage non disponibile o dato corrotto: si ignora e si riparte dal bundle
+  }
+  return null;
+}
+
+const guidaOverrideIniziale = caricaGuidaOverride();
+let guideDatabase = guidaOverrideIniziale ? guidaOverrideIniziale.dati : guideDatabaseDefault;
 
 // ---------- Costanti dominio Fantacalcio Mantra ----------
 const RUOLI = ["Por", "Dd", "Ds", "Dc", "B", "E", "M", "C", "W", "T", "A", "Pc"];
@@ -26,9 +44,9 @@ const GRUPPO = {
 };
 
 const GRUPPO_LABEL = { POR: "Portieri", DIF: "Difensori", CEN: "Centrocampisti", ATT: "Attaccanti" };
-const GRUPPO_ACCENT = { POR: "text-amber-400", DIF: "text-sky-400", CEN: "text-emerald-400", ATT: "text-rose-400" };
-const GRUPPO_BORDER = { POR: "border-amber-400/40", DIF: "border-sky-400/40", CEN: "border-emerald-400/40", ATT: "border-rose-400/40" };
-const GRUPPO_BG = { POR: "bg-amber-400/10", DIF: "bg-sky-400/10", CEN: "bg-emerald-400/10", ATT: "bg-rose-400/10" };
+const GRUPPO_ACCENT = { POR: "text-amber-600", DIF: "text-sky-600", CEN: "text-emerald-600", ATT: "text-rose-600" };
+const GRUPPO_BORDER = { POR: "border-amber-500/40", DIF: "border-sky-500/40", CEN: "border-emerald-500/40", ATT: "border-rose-500/40" };
+const GRUPPO_BG = { POR: "bg-amber-500/8", DIF: "bg-sky-500/8", CEN: "bg-emerald-500/8", ATT: "bg-rose-500/8" };
 
 const MODULI = {
   "3-4-3": ["Dc", "Dc", "Dc", "E", "M", "C", "E", "W", "A", "Pc"],
@@ -49,6 +67,73 @@ const MODULI = {
 
 const DEFAULT_SPLIT = { POR: 5, DIF: 20, CEN: 30, ATT: 45 };
 
+const DEFAULT_ALGORITMI = {
+  // Valore Reale (FVM)
+  defaultTitolare: 0.75,
+  baseTitolarita: 0.70,
+  coefTitolarita: 0.30,
+  bonusMultiruolo: 0.05,
+  bonusRigorista: 0.15,
+  bonusPunizioni: 0.05,
+  bonusAngoli: 0.05,
+  misterValorizzato: 1.10,
+  misterPenalizzato: 0.90,
+
+  // Decisione Rilancio CPU
+  urgenzaMinimo: 1.6,
+  febbreAstaCoef: 0.12,
+  febbreAstaCap: 0.5,
+  bonusFasciaCoef: 0.06,
+  probColpoDiTestaBase: 0.22,
+  probColpoDiTestaFascia: 0.05,
+  moltiplicatoreColpoDiTestaMin: 1.4,
+  moltiplicatoreColpoDiTestaMax: 1.9,
+};
+
+// Metadati per la Tab "Algoritmi": raggruppano DEFAULT_ALGORITMI in sezioni
+// leggibili, con range/step adatti a ciascun parametro per gli slider di modifica.
+const ALGORITMI_GRUPPI = [
+  {
+    titolo: "Valore Reale (FVM)",
+    descrizione: "Come calcoliamo il valore reale stimato di un giocatore a partire da quotazione/FVM, titolarità, ruoli multipli e giudizio del mister in Guida.",
+    campi: [
+      { chiave: "defaultTitolare", label: "Titolarità di default", desc: "Probabilità di titolarità usata quando il giocatore non è presente in Guida.", min: 0, max: 1, step: 0.05, decimali: 2 },
+      { chiave: "baseTitolarita", label: "Base titolarità", desc: "Quota fissa del fattore titolarità, indipendente dalla probabilità.", min: 0, max: 1, step: 0.01, decimali: 2 },
+      { chiave: "coefTitolarita", label: "Coefficiente titolarità", desc: "Peso della probabilità di titolarità sul fattore finale.", min: 0, max: 1, step: 0.01, decimali: 2 },
+      { chiave: "bonusMultiruolo", label: "Bonus multiruolo", desc: "Bonus percentuale per ogni ruolo aggiuntivo oltre al primo.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "bonusRigorista", label: "Bonus rigorista", desc: "Bonus percentuale se il giocatore è il rigorista designato.", min: 0, max: 0.5, step: 0.01, decimali: 2 },
+      { chiave: "bonusPunizioni", label: "Bonus punizioni", desc: "Bonus percentuale se il giocatore batte le punizioni.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "bonusAngoli", label: "Bonus angoli", desc: "Bonus percentuale se il giocatore batte i corner.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "misterValorizzato", label: "Moltiplicatore valorizzato", desc: "Moltiplicatore applicato ai giocatori segnalati come valorizzati dal mister in Guida.", min: 1, max: 1.5, step: 0.01, decimali: 2 },
+      { chiave: "misterPenalizzato", label: "Moltiplicatore penalizzato", desc: "Moltiplicatore applicato ai giocatori segnalati come penalizzati dal mister in Guida.", min: 0.5, max: 1, step: 0.01, decimali: 2 },
+    ],
+  },
+  {
+    titolo: "Decisione Rilancio CPU",
+    descrizione: "Parametri che guidano il comportamento delle squadre CPU (e dell'agente \"Tu\") nella Simulazione asta: quando rilanciano e con quale aggressività.",
+    campi: [
+      { chiave: "urgenzaMinimo", label: "Urgenza sotto minimo", desc: "Moltiplicatore di urgenza quando la squadra è sotto il minimo di giocatori richiesto per il reparto.", min: 1, max: 3, step: 0.1, decimali: 1 },
+      { chiave: "febbreAstaCoef", label: "Coefficiente febbre d'asta", desc: "Quanto cresce l'aggressività per ogni concorrente attivo oltre i primi due.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "febbreAstaCap", label: "Tetto febbre d'asta", desc: "Aumento massimo di aggressività dovuto alla febbre d'asta.", min: 0, max: 1, step: 0.05, decimali: 2 },
+      { chiave: "bonusFasciaCoef", label: "Bonus fascia/stelle", desc: "Bonus di valore percepito per ogni stella oltre la terza.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "probColpoDiTestaBase", label: "Prob. colpo di testa (base)", desc: "Probabilità base che una CPU faccia un rilancio a sorpresa ('colpo di testa').", min: 0, max: 1, step: 0.01, decimali: 2 },
+      { chiave: "probColpoDiTestaFascia", label: "Prob. colpo di testa (per stella)", desc: "Incremento di probabilità di colpo di testa per ogni stella del giocatore.", min: 0, max: 0.3, step: 0.01, decimali: 2 },
+      { chiave: "moltiplicatoreColpoDiTestaMin", label: "Colpo di testa · moltiplicatore min", desc: "Moltiplicatore minimo applicato al valore percepito durante un colpo di testa.", min: 1, max: 2, step: 0.05, decimali: 2 },
+      { chiave: "moltiplicatoreColpoDiTestaMax", label: "Colpo di testa · moltiplicatore max", desc: "Moltiplicatore massimo applicato al valore percepito durante un colpo di testa.", min: 1, max: 3, step: 0.05, decimali: 2 },
+    ],
+  },
+];
+
+// Indicatori mostrati nella tab Squadre: non sono parametri modificabili ma numeri
+// derivati dal Valore Reale calcolato coi parametri qui sopra — li spieghiamo nella
+// tab Algoritmi per tenere insieme "come li calcoliamo" e "cosa vuol dire il numero".
+const INDICATORI_FORZA_ROSA = [
+  { label: "Indice forza rosa", desc: "Somma del Valore Reale stimato (vedi sezione qui sotto) di tutti i giocatori in rosa. È il numero grezzo che misura quanto vale la squadra secondo il modello." },
+  { label: "#N forza", desc: "Etichetta accanto al nome della squadra: la sua posizione in classifica tra tutte le squadre ordinate per Indice forza rosa decrescente." },
+  { label: "Efficienza spesa", desc: "Indice forza rosa diviso i crediti spesi, in percentuale. Sopra 100% vuol dire aver ottenuto più valore reale di quanto pagato; sotto 100% il contrario." },
+  { label: "Miglior affare", desc: "Etichetta assegnata alla squadra con l'Efficienza spesa più alta: chi, a parità di crediti spesi, ha portato a casa il valore reale stimato maggiore." },
+];
+
 const STORAGE_KEY = "asta-mantra-2026-27";
 
 // Limiti di rosa (validi per ogni squadra, compresa la propria)
@@ -56,6 +141,26 @@ const CAP_POR = 4;
 const CAP_ALTRI = 40;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
+
+// Avvia il download lato browser di un file testuale (CSV/JSON) generato al volo,
+// tramite un link temporaneo con attributo "download": non richiede backend.
+function scaricaFile(nomeFile, contenuto, mime = "text/csv;charset=utf-8;") {
+  const blob = new Blob([contenuto], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nomeFile;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function dataFileOggi() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+}
 
 function buildSlotsFromModulo(nomeModulo) {
   const outfield = MODULI[nomeModulo] || MODULI["3-4-3"];
@@ -200,6 +305,7 @@ function trovaInfoGiocatoreInGuida(giocatore, guida) {
   };
 
   let probTitolare = null;
+  let rivale = null; // avversario diretto nel ballottaggio, se presente
   let motivi = [];
   const info = {
     isRigorista: false, isPunizioni: false, isAngoli: false,
@@ -209,8 +315,8 @@ function trovaInfoGiocatoreInGuida(giocatore, guida) {
   if ((guida.titolari || []).some((t) => somiglia(t.nome))) probTitolare = 1;
 
   (guida.ballottaggi || []).forEach((b) => {
-    if (somiglia(b.giocatoreA?.nome)) probTitolare = (b.giocatoreA.percentuale ?? 50) / 100;
-    if (somiglia(b.giocatoreB?.nome)) probTitolare = (b.giocatoreB.percentuale ?? 50) / 100;
+    if (somiglia(b.giocatoreA?.nome)) { probTitolare = (b.giocatoreA.percentuale ?? 50) / 100; rivale = b.giocatoreB || null; }
+    if (somiglia(b.giocatoreB?.nome)) { probTitolare = (b.giocatoreB.percentuale ?? 50) / 100; rivale = b.giocatoreA || null; }
   });
 
   if ((guida.specialisti?.rigoristi || []).some((p) => somiglia(p.nome))) info.isRigorista = true;
@@ -226,26 +332,38 @@ function trovaInfoGiocatoreInGuida(giocatore, guida) {
   if (guida.scommessa && somiglia(guida.scommessa.nome)) info.isScommessa = true;
 
   if (probTitolare === null) return null; // non trovato in Guida: nessuna informazione aggiuntiva
-  return { probTitolare, motivi, ...info };
+  return { probTitolare, rivale, motivi, ...info };
 }
 
 // Valore reale stimato = quotazione/FVM corretta per titolarità, ruoli multipli,
 // bonus da specialista sui piazzati e giudizio del mister sulla squadra.
-function calcolaValoreReale(giocatore, guidaSquadra) {
+function calcolaValoreReale(giocatore, guidaSquadra, algoritmi = DEFAULT_ALGORITMI) {
   const base = (giocatore.fvm && giocatore.fvm > 0 ? giocatore.fvm : giocatore.quotazione) || 1;
   const info = trovaInfoGiocatoreInGuida(giocatore, guidaSquadra);
-  const probTitolare = info ? info.probTitolare : 0.75; // default neutro se non presente in Guida
-  const fattoreTitolarita = 0.7 + 0.3 * probTitolare;
-  const bonusRuoli = 1 + 0.05 * Math.max(0, (giocatore.ruoli || []).length - 1);
-  const bonusSpecialista = 1 + (info?.isRigorista ? 0.15 : 0) + (info?.isPunizioni ? 0.05 : 0) + (info?.isAngoli ? 0.05 : 0);
-  const fattoreMister = info?.isValorizzato ? 1.10 : info?.isPenalizzato ? 0.90 : 1;
+  const probTitolare = info ? info.probTitolare : (algoritmi.defaultTitolare ?? 0.75); // default neutro se non presente in Guida
+  const fattoreTitolarita = (algoritmi.baseTitolarita ?? 0.70) + (algoritmi.coefTitolarita ?? 0.30) * probTitolare;
+  const bonusRuoli = 1 + (algoritmi.bonusMultiruolo ?? 0.05) * Math.max(0, (giocatore.ruoli || []).length - 1);
+  const bonusSpecialista = 1 + (info?.isRigorista ? (algoritmi.bonusRigorista ?? 0.15) : 0) 
+                             + (info?.isPunizioni ? (algoritmi.bonusPunizioni ?? 0.05) : 0) 
+                             + (info?.isAngoli ? (algoritmi.bonusAngoli ?? 0.05) : 0);
+  const fattoreMister = info?.isValorizzato ? (algoritmi.misterValorizzato ?? 1.10) 
+                      : info?.isPenalizzato ? (algoritmi.misterPenalizzato ?? 0.90) : 1;
   const valore = base * fattoreTitolarita * bonusRuoli * bonusSpecialista * fattoreMister;
   return { valore: Math.round(valore * 10) / 10, info };
 }
 
-function valoreGiocatore(giocatore) {
+function valoreGiocatore(giocatore, algoritmi = DEFAULT_ALGORITMI) {
   const guida = trovaVoceGuida(giocatore.squadra);
-  return calcolaValoreReale(giocatore, guida);
+  return calcolaValoreReale(giocatore, guida, algoritmi);
+}
+
+// Scheda Guida completa per un singolo giocatore (usata in Asta Live): oltre al
+// valore reale, recupera la voce squadra e le info testuali (ballottaggio con
+// avversario, motivi valorizzato/penalizzato, ecc.) da mostrare durante la chiamata.
+function trovaGuidaGiocatore(giocatore) {
+  const guida = trovaVoceGuida(giocatore.squadra);
+  const info = trovaInfoGiocatoreInGuida(giocatore, guida);
+  return { guida, info };
 }
 
 // ---------- Dettatura vocale: parsing numeri italiani ----------
@@ -365,6 +483,7 @@ const initialState = {
   slots: buildSlotsFromModulo("3-4-3"),
   giocatori: [], // {id, ruoli, nome, squadra, quotazione, note, stato: 'disponibile'|'preso_altri'|'mio', presoDa, preferito}
   squadre: buildSquadre(10, 1000),
+  algoritmi: { ...DEFAULT_ALGORITMI },
 };
 
 // ---------- Persistenza ----------
@@ -379,7 +498,11 @@ function useAstaStorage() {
         const res = await window.storage.get(STORAGE_KEY, false);
         if (res && res.value) {
           const parsed = JSON.parse(res.value);
-          setState((prev) => ({ ...prev, ...parsed }));
+          setState((prev) => {
+            const merged = { ...prev, ...parsed };
+            merged.algoritmi = { ...prev.algoritmi, ...parsed.algoritmi };
+            return merged;
+          });
         }
       } catch (e) {
         // nessun dato salvato ancora, si parte da zero
@@ -405,9 +528,40 @@ function useAstaStorage() {
   return [state, setState, loaded];
 }
 
+// Gestisce l'aggiornamento a runtime di guideDatabase (upload dalla tab Guida) e la
+// sua persistenza in localStorage. Le altre tab che leggono guideDatabase (Asta,
+// Squadre, Simula) sono montate/smontate col cambio scheda in App, quindi leggono
+// sempre dati freschi al mount successivo; solo GuidaTab resta montata mentre la si
+// aggiorna, e usa "aggiornataIl" come dipendenza per ricalcolare la lista squadre
+// senza perdere il proprio stato locale (messaggi, pannello aperto).
+function useGuidaDatabase() {
+  const [aggiornataIl, setAggiornataIl] = useState(guidaOverrideIniziale?.aggiornataIl || null);
+
+  function aggiornaGuida(datiCaricati, modalita) {
+    const nuovo = modalita === "sostituisci" ? datiCaricati : { ...guideDatabase, ...datiCaricati };
+    guideDatabase = nuovo;
+    const timestamp = new Date().toLocaleString("it-IT");
+    try {
+      localStorage.setItem(GUIDA_OVERRIDE_KEY, JSON.stringify({ dati: nuovo, aggiornataIl: timestamp }));
+    } catch (e) {
+      // storage pieno o non disponibile: l'aggiornamento resta comunque attivo per questa sessione
+    }
+    setAggiornataIl(timestamp);
+  }
+
+  function ripristinaGuida() {
+    guideDatabase = guideDatabaseDefault;
+    try { localStorage.removeItem(GUIDA_OVERRIDE_KEY); } catch (e) { /* ignora */ }
+    setAggiornataIl(null);
+  }
+
+  return { aggiornataIl, aggiornaGuida, ripristinaGuida };
+}
+
 // ---------- App ----------
 export default function App() {
   const [state, setState, loaded] = useAstaStorage();
+  const { aggiornataIl: guidaAggiornataIl, aggiornaGuida, ripristinaGuida } = useGuidaDatabase();
   const [tab, setTab] = useState("asta");
 
   // Stato del giocatore "chiamato" nell'asta live: sollevato qui (invece che dentro
@@ -455,7 +609,7 @@ export default function App() {
   // rotazione un profilo di personalità; "Io" diventa l'agente "Tu".
   function avviaSimulazione() {
     const disponibili = giocatori.filter((g) => g.stato === "disponibile");
-    const pool = simCalcolaFasce(disponibili.map((g) => ({ id: g.id, nome: g.nome, ruoli: g.ruoli, squadra: g.squadra, quotazione: g.quotazione, fvm: g.fvm })));
+    const pool = simCalcolaFasce(disponibili.map((g) => ({ id: g.id, nome: g.nome, ruoli: g.ruoli, squadra: g.squadra, quotazione: g.quotazione, fvm: g.fvm })), algoritmi);
 
     // L'agente "Tu": personalità neutra sui reparti perché il peso lo danno già le
     // ripartizioni reali (setup.split); slotObiettivo viene dal modulo personalizzato
@@ -593,7 +747,7 @@ export default function App() {
       const attore = simSquadre.find((s) => s.id === attoreId);
       const numAttivi = simAuction.participants.length - simAuction.passati.size;
       simTimeoutRef.current = setTimeout(() => {
-        const rilancia = simDecisioneRilancio(attore, simAuction.giocatore, simAuction.ruolo, simAuction.prezzoAttuale, simRosaTarget, simMinimi, numAttivi, simPool);
+        const rilancia = simDecisioneRilancio(attore, simAuction.giocatore, simAuction.ruolo, simAuction.prezzoAttuale, simRosaTarget, simMinimi, numAttivi, simPool, algoritmi);
         simRisolviAzione(attoreId, rilancia);
       }, 550);
       return;
@@ -606,7 +760,7 @@ export default function App() {
       return;
     }
     simTimeoutRef.current = setTimeout(() => {
-      const scelta = simSceltaChiamata(chiamante, simPool, setup, simRosaTarget, simMinimi);
+      const scelta = simSceltaChiamata(chiamante, simPool, setup, simRosaTarget, simMinimi, algoritmi);
       if (!scelta) { simAvanzaChiamata(simSquadre, simPool); return; }
       avviaAstaSimulata(scelta.giocatore, scelta.ruolo, chiamante.id, scelta.scommessa);
     }, 700);
@@ -631,7 +785,7 @@ export default function App() {
         const attoreId = corrente.participants[corrente.cursor];
         const attore = squadre.find((s) => s.id === attoreId);
         const numAttivi = corrente.participants.length - corrente.passati.size;
-        const rilancia = simDecisioneRilancio(attore, corrente.giocatore, corrente.ruolo, corrente.prezzoAttuale, simRosaTarget, simMinimi, numAttivi, pool);
+        const rilancia = simDecisioneRilancio(attore, corrente.giocatore, corrente.ruolo, corrente.prezzoAttuale, simRosaTarget, simMinimi, numAttivi, pool, algoritmi);
         const passati = new Set(corrente.passati);
         let leaderId = corrente.leaderId, prezzoAttuale = corrente.prezzoAttuale;
         if (rilancia) { prezzoAttuale += 1; leaderId = attoreId; } else { passati.add(attoreId); }
@@ -660,7 +814,7 @@ export default function App() {
       if (idx === -1) break;
       callerIdx = idx;
       const chiamante = squadre[callerIdx];
-      const scelta = simSceltaChiamata(chiamante, pool, setup, simRosaTarget, simMinimi);
+      const scelta = simSceltaChiamata(chiamante, pool, setup, simRosaTarget, simMinimi, algoritmi);
       if (!scelta) { callerIdx = (callerIdx + 1) % squadre.length; continue; }
       const eleggibili = squadre.filter((s) => simPuoComprare(s, scelta.ruolo, simRosaTarget)).map((s) => s.id);
       const participants = squadre.map((s) => s.id).filter((id) => eleggibili.includes(id) || id === chiamante.id);
@@ -723,7 +877,14 @@ export default function App() {
     );
   }
 
-  const { setup, slots, giocatori, squadre } = state;
+  const { setup, slots, giocatori, squadre, algoritmi = DEFAULT_ALGORITMI } = state;
+
+  function updateAlgoritmi(patch) {
+    setState((prev) => ({
+      ...prev,
+      algoritmi: { ...prev.algoritmi, ...patch },
+    }));
+  }
 
   const ioSquadra = useMemo(() => squadre.find((s) => s.isMia) || squadre[0], [squadre]);
   const rosaIo = ioSquadra.rosa;
@@ -847,21 +1008,25 @@ export default function App() {
     setState((prev) => ({ ...prev, giocatori: prev.giocatori.filter((g) => g.id !== id) }));
   }
 
-  // Formato riga testuale: Ruoli(separati da ; o ,);Nome;Squadra;Quotazione;Fvm(opzionale)
+  // Formato riga testuale: Ruoli(separati da ; o ,);Nome;Squadra;Quotazione;Fvm(opzionale);Preferito(opzionale)
+  // La colonna Preferito è lo stesso formato prodotto dall'esportazione CSV della
+  // lista (bottone "Esporta CSV"): 1/true/si per i preferiti, così il file scaricato
+  // si può reimportare qui e ritrovare le stelline già segnate.
   function importaCsv(testo, sostituisci) {
     const righe = testo.split("\n").map((r) => r.trim()).filter(Boolean);
     const nuovi = [];
     righe.forEach((riga) => {
       const parti = riga.split(";").map((p) => p.trim());
       if (parti.length < 4) return;
-      const [ruoliRaw, nome, squadra, quotazione, fvm] = parti;
+      const [ruoliRaw, nome, squadra, quotazione, fvm, preferitoRaw] = parti;
       const ruoli = ruoliRaw.split(/[,\/]/).map((r) => r.trim()).filter((r) => RUOLI.includes(r));
       if (ruoli.length === 0 || !nome) return;
       nuovi.push({
         id: uid(), ruoli, nome, squadra,
         quotazione: parseFloat((quotazione || "0").replace(",", ".")) || 0,
         fvm: fvm ? parseFloat(fvm.replace(",", ".")) || null : null,
-        note: "", stato: "disponibile", preferito: false,
+        note: "", stato: "disponibile",
+        preferito: ["1", "true", "si", "sì", "x"].includes((preferitoRaw || "").trim().toLowerCase()),
       });
     });
     setState((prev) => ({
@@ -940,24 +1105,24 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <div className="min-h-screen bg-[#0A120D] flex items-center justify-center text-[#8FA396] font-mono">
+      <div className="min-h-screen bg-inkbg flex items-center justify-center text-inkdim font-mono">
         Caricamento asta...
       </div>
     );
   }
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#0A120D] text-[#EDEBE3] flex flex-col font-sans" style={{ height: "100dvh" }}>
+    <div className="h-screen w-full overflow-hidden bg-inkbg text-ink flex flex-col font-sans" style={{ height: "100dvh" }}>
       {/* Header scoreboard */}
-      <header className="shrink-0 z-20 bg-[#0A120D]/95 backdrop-blur border-b border-[#22352A] px-4 pt-4 pb-3">
+      <header className="shrink-0 z-20 bg-inkbg/95 backdrop-blur border-b border-line px-4 pt-4 pb-3">
         <div className="flex items-center justify-between">
-          <div className="text-[10px] tracking-[0.2em] text-[#8FA396] uppercase font-semibold">Asta Mantra · Serie A 26/27</div>
+          <div className="text-[10px] tracking-[0.2em] text-inkdim uppercase font-semibold">Asta Mantra · Serie A 26/27</div>
           <button
             onClick={() => setConfirmReset(true)}
-            className="p-2 rounded-lg border border-[#22352A] text-[#8FA396] active:scale-95 transition"
+            className="p-2 rounded-lg border border-line text-inkdim active:scale-95 transition"
             aria-label="Azzera asta"
           >
-            <RotateCcw size={18} />
+            <RotateCcw size={22} />
           </button>
         </div>
         {/* barra reparti (solo in Rosa) */}
@@ -1017,7 +1182,10 @@ export default function App() {
           <SquadreTab squadre={squadre} giocatori={giocatori} />
         )}
         {tab === "guida" && (
-          <GuidaTab giocatori={giocatori} squadre={squadre} />
+          <GuidaTab
+            giocatori={giocatori} squadre={squadre}
+            aggiornataIl={guidaAggiornataIl} aggiornaGuida={aggiornaGuida} ripristinaGuida={ripristinaGuida}
+          />
         )}
         {tab === "simulazione" && (
           <SimulazioneTab
@@ -1033,12 +1201,15 @@ export default function App() {
             vaiATab={setTab}
           />
         )}
+        {tab === "algoritmi" && (
+          <AlgoritmiTab algoritmi={algoritmi} updateAlgoritmi={updateAlgoritmi} />
+        )}
       </main>
 
       {/* Nav inferiore, bloccata in fondo: fa parte del layout flex, non "fixed",
           così su iOS Safari non si sposta quando la barra degli indirizzi appare/scompare */}
       <nav
-        className="shrink-0 bg-[#0A120D]/95 backdrop-blur border-t border-[#22352A] flex z-20 overflow-x-auto"
+        className="shrink-0 bg-inkbg/95 backdrop-blur border-t border-line flex z-20 overflow-x-auto"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {[
@@ -1050,13 +1221,14 @@ export default function App() {
           { id: "squadre", label: "Squadre", icon: Users },
           { id: "guida", label: "Guida", icon: BookOpen },
           { id: "simulazione", label: "Simula", icon: Gavel },
+          { id: "algoritmi", label: "Algoritmi", icon: Cpu },
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition ${tab === id ? "text-emerald-400" : "text-[#8FA396]"}`}
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition ${tab === id ? "text-emerald-400" : "text-inkdim"}`}
           >
-            <Icon size={20} />
+            <Icon size={24} />
             <span className="text-[10px] font-semibold tracking-wide">{label}</span>
           </button>
         ))}
@@ -1103,9 +1275,9 @@ function SetupTab({ setup, updateSetup, squadre, rinominaSquadra }) {
             />
           </Field>
         </div>
-        <p className="text-xs text-[#8FA396] mt-2">
-          Ogni rosa, compresa la tua, può avere al massimo <span className="text-[#EDEBE3] font-semibold">{CAP_POR} portieri</span> e{" "}
-          <span className="text-[#EDEBE3] font-semibold">{CAP_ALTRI} giocatori</span> negli altri ruoli.
+        <p className="text-xs text-inkdim mt-2">
+          Ogni rosa, compresa la tua, può avere al massimo <span className="text-ink font-semibold">{CAP_POR} portieri</span> e{" "}
+          <span className="text-ink font-semibold">{CAP_ALTRI} giocatori</span> negli altri ruoli.
         </p>
       </Section>
 
@@ -1122,7 +1294,7 @@ function SetupTab({ setup, updateSetup, squadre, rinominaSquadra }) {
             </div>
           ))}
         </div>
-        <p className="text-xs text-[#8FA396] mt-2">Rinomina le squadre con i nomi reali dei partecipanti: le userai per assegnare i giocatori presi da altri durante l'asta.</p>
+        <p className="text-xs text-inkdim mt-2">Rinomina le squadre con i nomi reali dei partecipanti: le userai per assegnare i giocatori presi da altri durante l'asta.</p>
       </Section>
     </div>
   );
@@ -1138,27 +1310,27 @@ function ModuliTab({ setup, cambiaModulo, slots, cambiaRuoloSlot }) {
             <button
               key={m}
               onClick={() => cambiaModulo(m)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-mono font-bold border transition ${setup.modulo === m ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+              className={`px-3 py-1.5 rounded-lg text-sm font-mono font-bold border transition ${setup.modulo === m ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
                 }`}
             >
               {m}
             </button>
           ))}
         </div>
-        <p className="text-xs text-[#8FA396] mt-2">Schema puramente indicativo per la disposizione in campo: acquisti e limiti di rosa non dipendono da questi slot.</p>
+        <p className="text-xs text-inkdim mt-2">Schema puramente indicativo per la disposizione in campo: acquisti e limiti di rosa non dipendono da questi slot.</p>
       </Section>
 
       <Section title="Personalizza ruoli per slot (riferimento tattico)">
         <div className="grid grid-cols-2 gap-2">
           {slots.map((s, i) => (
-            <div key={s.id} className="flex items-center justify-between bg-[#111C15] border border-[#22352A] rounded-lg px-2 py-1.5">
-              <span className="text-[11px] text-[#8FA396]">Slot {i + 1}</span>
+            <div key={s.id} className="flex items-center justify-between bg-panel border border-line rounded-lg px-2 py-1.5">
+              <span className="text-[11px] text-inkdim">Slot {i + 1}</span>
               <select
                 value={s.ruolo}
                 onChange={(e) => cambiaRuoloSlot(s.id, e.target.value)}
-                className="bg-transparent text-sm font-mono font-bold text-[#EDEBE3] outline-none"
+                className="bg-transparent text-sm font-mono font-bold text-ink outline-none"
               >
-                {RUOLI.map((r) => <option key={r} value={r} className="bg-[#111C15]">{r}</option>)}
+                {RUOLI.map((r) => <option key={r} value={r} className="bg-panel">{r}</option>)}
               </select>
             </div>
           ))}
@@ -1224,17 +1396,17 @@ function GiocatoriTab({ giocatori, squadre, aggiungiGiocatore, rimuoviGiocatore,
   return (
     <div className="space-y-5">
       <Section title="Importa la tua lista">
-        <p className="text-xs text-[#8FA396] mb-2">
+        <p className="text-xs text-inkdim mb-2">
           Scarica il listone da fantacalcio.it (pagina Quotazioni → Esporta) o da un altro sito ufficiale, poi carica qui il file: riconosco automaticamente ruolo Mantra, quotazione e Fvm.
         </p>
         <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFile} className="hidden" />
         <button onClick={() => fileInputRef.current?.click()} className="btn-primary inline-flex items-center gap-1.5 text-xs px-3 py-1.5">
-          <FileSpreadsheet size={14} /> Carica file Excel / CSV
+          <FileSpreadsheet size={17} /> Carica file Excel / CSV
         </button>
         {importMsg && <p className="text-xs text-emerald-400 mt-2">{importMsg}</p>}
 
-        <button onClick={() => setShowImport((v) => !v)} className="mt-2 flex items-center gap-1.5 text-xs text-[#8FA396] py-1.5">
-          <Upload size={13} /> oppure incolla lista via testo
+        <button onClick={() => setShowImport((v) => !v)} className="mt-2 flex items-center gap-1.5 text-xs text-inkdim py-1.5">
+          <Upload size={16} /> oppure incolla lista via testo
         </button>
         {showImport && (
           <div className="mt-2 space-y-2">
@@ -1256,7 +1428,7 @@ function GiocatoriTab({ giocatori, squadre, aggiungiGiocatore, rimuoviGiocatore,
           {RUOLI.map((r) => (
             <button
               key={r} onClick={() => toggleRuoloSel(r)}
-              className={`px-2 py-1 rounded-md text-xs font-mono font-bold border transition ${ruoliSel.includes(r) ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+              className={`px-2 py-1 rounded-md text-xs font-mono font-bold border transition ${ruoliSel.includes(r) ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
                 }`}
             >{r}</button>
           ))}
@@ -1267,39 +1439,52 @@ function GiocatoriTab({ giocatori, squadre, aggiungiGiocatore, rimuoviGiocatore,
           <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Nome giocatore" className="input-dark col-span-2" />
         </div>
         <button onClick={handleAdd} className="btn-primary inline-flex items-center gap-1.5 text-xs px-3 py-1.5">
-          <Plus size={14} /> Aggiungi alla lista
+          <Plus size={17} /> Aggiungi alla lista
         </button>
       </Section>
 
       <Section title={`Lista giocatori (${giocatori.length}) · ${giocatori.filter((g) => g.preferito).length} preferiti`}>
+        <button
+          onClick={() => {
+            const righe = giocatori.map((g) => [
+              (g.ruoli || []).join(","), g.nome, g.squadra || "",
+              g.quotazione ?? 0, g.fvm ?? "", g.preferito ? "1" : "0",
+            ].join(";"));
+            scaricaFile(`fantacalcio-giocatori-${dataFileOggi()}.csv`, ["Ruoli;Nome;Squadra;Quotazione;Fvm;Preferito", ...righe].join("\n"));
+          }}
+          disabled={giocatori.length === 0}
+          className="btn-secondary w-full mb-2 inline-flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 disabled:opacity-40"
+        >
+          <Download size={16} /> Esporta CSV (con preferiti)
+        </button>
         <div className="flex gap-2 mb-2">
           <input value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="Cerca..." className="input-dark flex-1" />
           <button
             onClick={() => setSoloPreferiti((v) => !v)}
             aria-label="Solo preferiti"
-            className={`px-2.5 rounded-lg border flex items-center justify-center shrink-0 ${soloPreferiti ? "bg-amber-400/15 border-amber-400 text-amber-300" : "border-[#22352A] text-[#8FA396]"}`}
+            className={`px-2.5 rounded-lg border flex items-center justify-center shrink-0 ${soloPreferiti ? "bg-amber-400/15 border-amber-400 text-amber-300" : "border-line text-inkdim"}`}
           >
-            <Star size={16} fill={soloPreferiti ? "currentColor" : "none"} />
+            <Star size={19} fill={soloPreferiti ? "currentColor" : "none"} />
           </button>
         </div>
         <div className="flex flex-wrap gap-1.5 mb-3">
           <button
             onClick={() => setFiltroRuolo("TUTTI")}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuolo === "TUTTI" ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+            className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuolo === "TUTTI" ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
               }`}
           >Tutti</button>
           {RUOLI.map((r) => (
             <button
               key={r} onClick={() => setFiltroRuolo(r)}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuolo === r ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+              className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuolo === r ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
                 }`}
             >{r}</button>
           ))}
         </div>
         <div className="space-y-1.5 max-h-[50vh] overflow-y-auto">
-          {filtrati.length === 0 && <p className="text-sm text-[#8FA396] text-center py-6">Nessun giocatore. Carica un file o aggiungine uno a mano.</p>}
+          {filtrati.length === 0 && <p className="text-sm text-inkdim text-center py-6">Nessun giocatore. Carica un file o aggiungine uno a mano.</p>}
           {filtrati.map((g) => (
-            <div key={g.id} className="flex items-center justify-between bg-[#111C15] border border-[#22352A] rounded-lg px-3 py-2">
+            <div key={g.id} className="flex items-center justify-between bg-panel border border-line rounded-lg px-3 py-2">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="flex gap-1 shrink-0">
                   {(g.ruoli || []).map((r) => (
@@ -1308,17 +1493,17 @@ function GiocatoriTab({ giocatori, squadre, aggiungiGiocatore, rimuoviGiocatore,
                 </div>
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">{g.nome}</div>
-                  <div className="text-[11px] text-[#8FA396] truncate">
+                  <div className="text-[11px] text-inkdim truncate">
                     {g.squadra} {g.stato !== "disponibile" && `· ${g.stato === "mio" ? "in rosa" : `preso da ${squadreById[g.presoDa]?.nome || "altri"}`}`}
                   </div>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="font-mono text-sm">{g.quotazione}</span>
-                <button onClick={() => togglePreferito(g.id)} className={g.preferito ? "text-amber-400 p-1" : "text-[#8FA396] p-1"} aria-label="Preferito">
-                  <Star size={14} fill={g.preferito ? "currentColor" : "none"} />
+                <button onClick={() => togglePreferito(g.id)} className={g.preferito ? "text-amber-400 p-1" : "text-inkdim p-1"} aria-label="Preferito">
+                  <Star size={17} fill={g.preferito ? "currentColor" : "none"} />
                 </button>
-                <button onClick={() => rimuoviGiocatore(g.id)} className="text-[#8FA396] p-1"><Trash2 size={14} /></button>
+                <button onClick={() => rimuoviGiocatore(g.id)} className="text-inkdim p-1"><Trash2 size={17} /></button>
               </div>
             </div>
           ))}
@@ -1341,7 +1526,7 @@ function QuickBidButtons({ value, onChange }) {
           key={d}
           type="button"
           onClick={() => incrementa(d)}
-          className="flex-1 py-1.5 rounded-md border border-[#22352A] bg-[#0A120D] text-sm font-bold text-emerald-400 active:bg-[#182821]"
+          className="flex-1 py-1.5 rounded-md border border-line bg-inkbg text-sm font-bold text-emerald-400 active:bg-panelhover"
         >
           +{d}
         </button>
@@ -1539,7 +1724,7 @@ function AstaTab({
     <div className="space-y-4">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8FA396]" />
+          <Search size={19} className="absolute left-3 top-1/2 -translate-y-1/2 text-inkdim" />
           <input
             ref={inputRef}
             value={query}
@@ -1549,14 +1734,14 @@ function AstaTab({
             autoFocus
           />
           {query && !selezionato ? (
-            <button onClick={reset} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8FA396]"><X size={16} /></button>
+            <button onClick={reset} className="absolute right-3 top-1/2 -translate-y-1/2 text-inkdim"><X size={19} /></button>
           ) : !selezionato ? (
             <button
               onClick={() => inputRef.current?.focus()}
               aria-label="Detta col microfono della tastiera"
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#8FA396] p-1"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-inkdim p-1"
             >
-              <Mic size={16} />
+              <Mic size={19} />
             </button>
           ) : null}
         </div>
@@ -1564,7 +1749,7 @@ function AstaTab({
 
       {selezionato && (
         <div>
-          <label className="text-xs text-[#8FA396] mb-1 block">Prezzo attuale del rilancio</label>
+          <label className="text-xs text-inkdim mb-1 block">Prezzo attuale del rilancio</label>
           <div className="relative mb-2">
             <input
               type="text" inputMode="numeric" value={prezzoAttuale}
@@ -1574,7 +1759,7 @@ function AstaTab({
               }}
               placeholder="Inserisci man mano che l'asta sale, o detta col microfono" className="input-dark w-full pr-9"
             />
-            <Mic size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8FA396] pointer-events-none" />
+            <Mic size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-inkdim pointer-events-none" />
           </div>
           <QuickBidButtons value={prezzoAttuale} onChange={setPrezzoAttuale} />
         </div>
@@ -1584,53 +1769,53 @@ function AstaTab({
         <div className="flex flex-wrap gap-1.5 -mt-2">
           <button
             onClick={() => setFiltroRuoloAsta("TUTTI")}
-            className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuoloAsta === "TUTTI" ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+            className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuoloAsta === "TUTTI" ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
               }`}
           >Tutti</button>
           {RUOLI.map((r) => (
             <button
               key={r} onClick={() => setFiltroRuoloAsta(r)}
-              className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuoloAsta === r ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-[#22352A] text-[#8FA396]"
+              className={`px-2.5 py-1.5 rounded-md text-xs font-mono font-bold border transition ${filtroRuoloAsta === r ? "bg-emerald-400/15 border-emerald-400 text-emerald-300" : "border-line text-inkdim"
                 }`}
             >{r}</button>
           ))}
         </div>
       )}
       {!selezionato && (
-        <p className="text-[11px] text-[#8FA396] flex items-center gap-1.5">
-          <Mic size={12} className="shrink-0" /> Tocca il campo e usa il microfono della tastiera: detta "nome prezzo", es. "Scamacca quaranta"
+        <p className="text-[11px] text-inkdim flex items-center gap-1.5">
+          <Mic size={14} className="shrink-0" /> Tocca il campo e usa il microfono della tastiera: detta "nome prezzo", es. "Scamacca quaranta"
         </p>
       )}
 
       {!selezionato && risultati.length > 0 && (
-        <div className="bg-[#111C15] border border-[#22352A] rounded-lg divide-y divide-[#22352A] overflow-hidden">
+        <div className="bg-panel border border-line rounded-lg divide-y divide-[#22352A] overflow-hidden">
           {risultati.map((g) => (
-            <button key={g.id} onClick={() => selezionaGiocatore(g)} className={`w-full flex items-center justify-between px-3 py-2.5 active:bg-[#182821] ${g.preferito ? "bg-amber-400/5" : ""}`}>
+            <button key={g.id} onClick={() => selezionaGiocatore(g)} className={`w-full flex items-center justify-between px-3 py-2.5 active:bg-panelhover ${g.preferito ? "bg-amber-400/5" : ""}`}>
               <div className="flex items-center gap-2 min-w-0">
-                {g.preferito && <Star size={13} className="text-amber-400 shrink-0" fill="currentColor" />}
+                {g.preferito && <Star size={16} className="text-amber-400 shrink-0" fill="currentColor" />}
                 <div className="flex gap-1 shrink-0">
                   {g.ruoli.map((r) => (
                     <span key={r} className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${GRUPPO_BG[GRUPPO[r]]} ${GRUPPO_ACCENT[GRUPPO[r]]}`}>{r}</span>
                   ))}
                 </div>
                 <span className="text-sm font-semibold truncate">{g.nome}</span>
-                <span className="text-[11px] text-[#8FA396] truncate">{g.squadra}</span>
+                <span className="text-[11px] text-inkdim truncate">{g.squadra}</span>
               </div>
-              <span className="font-mono text-sm text-[#8FA396] shrink-0">{g.quotazione}</span>
+              <span className="font-mono text-sm text-inkdim shrink-0">{g.quotazione}</span>
             </button>
           ))}
         </div>
       )}
 
       {!selezionato && (query || filtroRuoloAsta !== "TUTTI") && risultati.length === 0 && (
-        <p className="text-sm text-[#8FA396] text-center py-4">Nessun giocatore disponibile trovato nella tua lista.</p>
+        <p className="text-sm text-inkdim text-center py-4">Nessun giocatore disponibile trovato nella tua lista.</p>
       )}
 
       {selezionato && analisi && (
-        <div className="bg-[#111C15] border border-[#22352A] rounded-xl p-4 space-y-4">
+        <div className="bg-panel border border-line rounded-xl p-4 space-y-4">
           {selezionato.preferito && (
             <div className="flex items-center gap-1.5 text-amber-300 bg-amber-400/10 border border-amber-400/40 rounded-lg px-2.5 py-1.5 text-xs font-bold">
-              <Star size={13} fill="currentColor" /> È uno dei tuoi preferiti!
+              <Star size={16} fill="currentColor" /> È uno dei tuoi preferiti!
             </div>
           )}
           <div className="flex items-center justify-between">
@@ -1641,27 +1826,27 @@ function AstaTab({
                 ))}
                 <span className="font-bold text-lg truncate">{selezionato.nome}</span>
               </div>
-              <div className="flex items-center gap-1.5 flex-wrap text-xs text-[#8FA396] mt-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap text-xs text-inkdim mt-0.5">
                 <span>{selezionato.squadra} · base {selezionato.quotazione}{selezionato.fvm ? ` · Fvm ${selezionato.fvm}` : ""}</span>
                 {valoreSelezionato?.info ? (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${valoreSelezionato.info.probTitolare >= 1 ? "bg-emerald-400/15 text-emerald-300" : "bg-amber-400/15 text-amber-300"}`}>
                     {valoreSelezionato.info.probTitolare >= 1 ? "TITOLARE" : `BALLOTTAGGIO ${Math.round(valoreSelezionato.info.probTitolare * 100)}%`}
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#0A120D] text-[#8FA396] border border-[#22352A]">TITOLARITÀ N.D.</span>
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-inkbg text-inkdim border border-line">TITOLARITÀ N.D.</span>
                 )}
               </div>
             </div>
-            <button onClick={reset} className="text-[#8FA396] p-1 shrink-0"><X size={18} /></button>
+            <button onClick={reset} className="text-inkdim p-1 shrink-0"><X size={22} /></button>
           </div>
 
           {selezionato.ruoli.length > 1 && (
             <div className="flex items-center gap-1.5 flex-wrap -mt-2">
-              <span className="text-[10px] text-[#8FA396] uppercase shrink-0">Valuta per ruolo</span>
+              <span className="text-[10px] text-inkdim uppercase shrink-0">Valuta per ruolo</span>
               {selezionato.ruoli.map((r) => (
                 <button
                   key={r} type="button" onClick={() => setRuoloScelto(r)}
-                  className={`text-[11px] font-bold px-2 py-1 rounded-md border transition ${ruoloScelto === r ? `${GRUPPO_BG[GRUPPO[r]]} ${GRUPPO_ACCENT[GRUPPO[r]]} border-current` : "border-[#22352A] text-[#8FA396]"
+                  className={`text-[11px] font-bold px-2 py-1 rounded-md border transition ${ruoloScelto === r ? `${GRUPPO_BG[GRUPPO[r]]} ${GRUPPO_ACCENT[GRUPPO[r]]} border-current` : "border-line text-inkdim"
                     }`}
                 >{r}</button>
               ))}
@@ -1674,70 +1859,77 @@ function AstaTab({
               <span className={`text-[11px] font-mono ${LIVELLO_CONFIG[livelloPrezzo].text}`}>{analisi.affidabilita}% affidabilità</span>
             </div>
           ) : (
-            <div className="rounded-lg border border-[#22352A] px-3 py-2 text-center text-[11px] text-[#8FA396]">
+            <div className="rounded-lg border border-line px-3 py-2 text-center text-[11px] text-inkdim">
               Inserisci il prezzo attuale per l'alert di convenienza
             </div>
           )}
 
           <div className="grid grid-cols-3 gap-1.5">
-            <div className="bg-[#0A120D] rounded-lg p-2 border border-[#22352A]">
-              <div className="text-[9px] text-[#8FA396] uppercase leading-tight">Max consigl.</div>
+            <div className="bg-inkbg rounded-lg p-2 border border-line">
+              <div className="text-[9px] text-inkdim uppercase leading-tight">Max consigl.</div>
               <div className="font-mono text-lg font-black text-emerald-400">{analisi.maxConsigliato}</div>
               {analisi.maxConsigliato >= analisi.tettoAssoluto ? (
                 <div className="text-[8px] text-amber-400 leading-tight mt-0.5">tetto 25% budget</div>
               ) : analisi.fattoreRuolo > 1 ? (
                 <div className="text-[8px] text-emerald-400 leading-tight mt-0.5">ruolo scarso: priorità alta</div>
               ) : analisi.fattoreRuolo < 1 && analisi.slotRuoloLiberi === 0 ? (
-                <div className="text-[8px] text-[#8FA396] leading-tight mt-0.5">ruolo coperto: solo backup</div>
+                <div className="text-[8px] text-inkdim leading-tight mt-0.5">ruolo coperto: solo backup</div>
               ) : analisi.fattoreRuolo < 1 ? (
-                <div className="text-[8px] text-[#8FA396] leading-tight mt-0.5">fuori dal modulo</div>
+                <div className="text-[8px] text-inkdim leading-tight mt-0.5">fuori dal modulo</div>
               ) : null}
             </div>
-            <div className={`rounded-lg p-2 border ${livelloPrezzo === "rosso" ? "bg-rose-400/10 border-rose-400" : livelloPrezzo === "giallo" ? "bg-amber-400/10 border-amber-400" : "bg-[#0A120D] border-[#22352A]"
+            <div className={`rounded-lg p-2 border ${livelloPrezzo === "rosso" ? "bg-rose-400/10 border-rose-400" : livelloPrezzo === "giallo" ? "bg-amber-400/10 border-amber-400" : "bg-inkbg border-line"
               }`}>
-              <div className="text-[9px] text-[#8FA396] uppercase leading-tight">Prezzo attuale</div>
-              <div className={`font-mono text-lg font-black ${livelloPrezzo === "rosso" ? "text-rose-400" : livelloPrezzo === "giallo" ? "text-amber-400" : livelloPrezzo === "verde" ? "text-emerald-400" : "text-[#EDEBE3]"
+              <div className="text-[9px] text-inkdim uppercase leading-tight">Prezzo attuale</div>
+              <div className={`font-mono text-lg font-black ${livelloPrezzo === "rosso" ? "text-rose-400" : livelloPrezzo === "giallo" ? "text-amber-400" : livelloPrezzo === "verde" ? "text-emerald-400" : "text-ink"
                 }`}>{prezzoNum > 0 ? prezzoNum : "–"}</div>
             </div>
-            <div className="bg-[#0A120D] rounded-lg p-2 border border-[#22352A]">
-              <div className="text-[9px] text-[#8FA396] uppercase leading-tight">Residuo ({analisi.slotLiberi} lib.)</div>
+            <div className="bg-inkbg rounded-lg p-2 border border-line">
+              <div className="text-[9px] text-inkdim uppercase leading-tight">Residuo ({analisi.slotLiberi} lib.)</div>
               <div className="font-mono text-lg font-black">{analisi.residuoGruppo}</div>
             </div>
           </div>
 
           {valoreSelezionato && (
-            <div className="flex items-center justify-between bg-[#0A120D] border border-[#22352A] rounded-lg px-3 py-2">
+            <div className="flex items-center justify-between bg-inkbg border border-line rounded-lg px-3 py-2">
               <div>
-                <div className="text-[10px] text-[#8FA396] uppercase">
+                <div className="text-[10px] text-inkdim uppercase">
                   {valoreSelezionato.info ? "Valore reale stimato (da Guida)" : "Stima base (quotazione/FVM)"}
                 </div>
-                <div className={`font-mono text-lg font-bold ${valoreSelezionato.info ? "text-sky-400" : "text-[#8FA396]"}`}>{valoreSelezionato.valore}</div>
+                <div className={`font-mono text-lg font-bold ${valoreSelezionato.info ? "text-sky-400" : "text-inkdim"}`}>{valoreSelezionato.valore}</div>
               </div>
               <div className="flex flex-wrap gap-1 justify-end max-w-[55%]">
                 {valoreSelezionato.info?.isValorizzato && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-300">VALORIZZATO</span>}
                 {valoreSelezionato.info?.isPenalizzato && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-rose-400/15 text-rose-300">PENALIZZATO</span>}
                 {valoreSelezionato.info?.isRigorista && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-400/15 text-amber-300">RIGORISTA</span>}
-                {valoreSelezionato.info === null && <span className="text-[9px] text-[#8FA396]">non presente in Guida</span>}
+                {valoreSelezionato.info === null && <span className="text-[9px] text-inkdim">non presente in Guida</span>}
               </div>
             </div>
           )}
 
+          <GuidaGiocatoreCard giocatore={selezionato} />
+
+          <PannelloInteresseAvversari
+            altreSquadre={altreSquadre} gById={gById} ruolo={ruoloScelto}
+            gruppo={analisi.gruppo} setup={setup} fattoreRuolo={analisi.fattoreRuolo}
+          />
+
           {impattoRosa && (
-            <div className="bg-[#0A120D] border border-[#22352A] rounded-lg p-2.5 space-y-1.5">
+            <div className="bg-inkbg border border-line rounded-lg p-2.5 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-[10px] text-[#8FA396] uppercase"><Users size={12} /> Impatto rosa · {setup.modulo} · {ruoloScelto}</span>
+                <span className="flex items-center gap-1.5 text-[10px] text-inkdim uppercase"><Users size={14} /> Impatto rosa · {setup.modulo} · {ruoloScelto}</span>
                 <span className={`font-mono text-sm font-bold ${impattoRosa.liberi > 0 ? "text-emerald-400" : "text-amber-400"}`}>
                   {impattoRosa.posseduti}/{impattoRosa.slotModulo}
                 </span>
               </div>
               {impattoRosa.slotModulo === 0 ? (
-                <p className="text-[11px] text-[#8FA396]">Ruolo {ruoloScelto} non previsto nel modulo {setup.modulo}.</p>
+                <p className="text-[11px] text-inkdim">Ruolo {ruoloScelto} non previsto nel modulo {setup.modulo}.</p>
               ) : impattoRosa.liberi > 0 ? (
                 <p className="text-[11px] text-emerald-300">Slot {ruoloScelto} libero: completa il reparto.</p>
               ) : impattoRosa.nomiPosseduti.length > 0 ? (
                 <p className="text-[11px] text-amber-300">Ruolo già coperto — sarebbe backup di {impattoRosa.nomiPosseduti.join(", ")}.</p>
               ) : (
-                <p className="text-[11px] text-[#8FA396]">Nessuno slot {ruoloScelto} nel modulo scelto.</p>
+                <p className="text-[11px] text-inkdim">Nessuno slot {ruoloScelto} nel modulo scelto.</p>
               )}
             </div>
           )}
@@ -1745,26 +1937,26 @@ function AstaTab({
           {!modalitaAssegna ? (
             <div className="flex flex-col gap-2 pt-1">
               <button onClick={() => { setModalitaAssegna("io"); setPrezzoFinale(prezzoAttuale); }} className="btn-primary w-full py-3.5 text-base flex items-center justify-center gap-2">
-                <Check size={19} /> AGGIUDICATO A ME
+                <Check size={23} /> AGGIUDICATO A ME
               </button>
               <button onClick={() => { setModalitaAssegna("altri"); setPrezzoFinale(prezzoAttuale); }} className="btn-secondary w-full">
                 Preso da un altro
               </button>
             </div>
           ) : modalitaAssegna === "io" ? (
-            <div className="space-y-2 pt-1 border-t border-[#22352A]">
-              <label className="text-xs text-[#8FA396] block pt-2">Ruolo con cui lo prendi</label>
+            <div className="space-y-2 pt-1 border-t border-line">
+              <label className="text-xs text-inkdim block pt-2">Ruolo con cui lo prendi</label>
               <select value={ruoloScelto} onChange={(e) => setRuoloScelto(e.target.value)} className="input-dark w-full">
                 {selezionato.ruoli.map((r) => (
-                  <option key={r} value={r} className="bg-[#111C15]">{r} · {RUOLO_LABEL[r]}</option>
+                  <option key={r} value={r} className="bg-panel">{r} · {RUOLO_LABEL[r]}</option>
                 ))}
               </select>
               {!puoAssegnare(ioSquadra, ruoloScelto) && (
                 <p className="text-xs text-rose-400 flex items-center gap-1.5">
-                  <AlertTriangle size={13} /> Limite di rosa raggiunto ({ruoloScelto === "Por" ? `${CAP_POR} portieri` : `${CAP_ALTRI} giocatori negli altri ruoli`}).
+                  <AlertTriangle size={16} /> Limite di rosa raggiunto ({ruoloScelto === "Por" ? `${CAP_POR} portieri` : `${CAP_ALTRI} giocatori negli altri ruoli`}).
                 </p>
               )}
-              <label className="text-xs text-[#8FA396] block">Prezzo finale pagato</label>
+              <label className="text-xs text-inkdim block">Prezzo finale pagato</label>
               <div className="relative">
                 <input
                   type="text" inputMode="numeric" value={prezzoFinale}
@@ -1774,7 +1966,7 @@ function AstaTab({
                   }}
                   className="input-dark w-full pr-9" autoFocus
                 />
-                <Mic size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8FA396] pointer-events-none" />
+                <Mic size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-inkdim pointer-events-none" />
               </div>
               <QuickBidButtons value={prezzoFinale} onChange={setPrezzoFinale} />
               <div className="flex gap-2 pt-1">
@@ -1783,25 +1975,25 @@ function AstaTab({
               </div>
             </div>
           ) : (
-            <div className="space-y-2 pt-1 border-t border-[#22352A]">
-              <label className="text-xs text-[#8FA396] block pt-2">Squadra che se lo aggiudica</label>
+            <div className="space-y-2 pt-1 border-t border-line">
+              <label className="text-xs text-inkdim block pt-2">Squadra che se lo aggiudica</label>
               <select value={squadraScelta} onChange={(e) => setSquadraScelta(e.target.value)} className="input-dark w-full">
                 {altreSquadre.map((s) => (
-                  <option key={s.id} value={s.id} className="bg-[#111C15]">{s.nome}</option>
+                  <option key={s.id} value={s.id} className="bg-panel">{s.nome}</option>
                 ))}
               </select>
-              <label className="text-xs text-[#8FA396] block">Ruolo assegnato</label>
+              <label className="text-xs text-inkdim block">Ruolo assegnato</label>
               <select value={ruoloScelto} onChange={(e) => setRuoloScelto(e.target.value)} className="input-dark w-full">
                 {selezionato.ruoli.map((r) => (
-                  <option key={r} value={r} className="bg-[#111C15]">{r} · {RUOLO_LABEL[r]}</option>
+                  <option key={r} value={r} className="bg-panel">{r} · {RUOLO_LABEL[r]}</option>
                 ))}
               </select>
               {!puoAssegnare(squadre.find((s) => s.id === squadraScelta), ruoloScelto) && (
                 <p className="text-xs text-rose-400 flex items-center gap-1.5">
-                  <AlertTriangle size={13} /> Quella squadra ha già raggiunto il limite per questo ruolo.
+                  <AlertTriangle size={16} /> Quella squadra ha già raggiunto il limite per questo ruolo.
                 </p>
               )}
-              <label className="text-xs text-[#8FA396] block">Prezzo pagato</label>
+              <label className="text-xs text-inkdim block">Prezzo pagato</label>
               <div className="relative">
                 <input
                   type="text" inputMode="numeric" value={prezzoFinale}
@@ -1811,7 +2003,7 @@ function AstaTab({
                   }}
                   className="input-dark w-full pr-9" autoFocus
                 />
-                <Mic size={15} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8FA396] pointer-events-none" />
+                <Mic size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-inkdim pointer-events-none" />
               </div>
               <QuickBidButtons value={prezzoFinale} onChange={setPrezzoFinale} />
               <div className="flex gap-2 pt-1">
@@ -1848,7 +2040,7 @@ const SIM_FASCE = [
   { soglia: 0.08, nome: "TOP", stelle: 5, colore: "text-amber-300 bg-amber-400/15 border-amber-400/40" },
   { soglia: 0.25, nome: "SEMI-TOP", stelle: 4, colore: "text-violet-300 bg-violet-400/15 border-violet-400/40" },
   { soglia: 0.60, nome: "BUONA ROTAZIONE", stelle: 3, colore: "text-sky-300 bg-sky-400/15 border-sky-400/40" },
-  { soglia: 0.85, nome: "RISERVA", stelle: 2, colore: "text-[#B9C7BE] bg-white/5 border-[#22352A]" },
+  { soglia: 0.85, nome: "RISERVA", stelle: 2, colore: "text-inkdim2 bg-white/5 border-line" },
   { soglia: 1.01, nome: "SCOMMESSA", stelle: 1, colore: "text-rose-300 bg-rose-400/15 border-rose-400/40" },
 ];
 
@@ -1857,7 +2049,7 @@ const SIM_FASCE = [
 // consigliato" = ValoreReale già corretto da titolarità, ruoli multipli, specialisti e
 // giudizio Guida — può essere più alto o più basso del medio, come nell'app di
 // riferimento (screenshot: Pr. Medio 15 vs Prezzo Consigliato 18).
-function simCalcolaFasce(pool) {
+function simCalcolaFasce(pool, algoritmi = DEFAULT_ALGORITMI) {
   const perGruppo = { POR: [], DIF: [], CEN: [], ATT: [] };
   pool.forEach((p) => perGruppo[GRUPPO[p.ruoli[0]]].push(p));
 
@@ -1865,7 +2057,7 @@ function simCalcolaFasce(pool) {
   Object.values(perGruppo).forEach((lista) => {
     const conValore = lista
       .map((p) => {
-        const { valore } = valoreGiocatore(p);
+        const { valore } = valoreGiocatore(p, algoritmi);
         const base = (p.fvm && p.fvm > 0 ? p.fvm : p.quotazione) || 1;
         return { p, valore, base };
       })
@@ -1902,8 +2094,8 @@ function simFattoreRuolo(squadra, ruolo) {
 
 // Valore percepito di un giocatore da parte di questa squadra: ValoreReale, con un bonus
 // se il giocatore è tra i tuoi preferiti (solo per l'agente "Tu", che porta preferitiIds).
-function simValorePercepito(squadra, giocatore) {
-  const base = valoreGiocatore(giocatore).valore;
+function simValorePercepito(squadra, giocatore, algoritmi = DEFAULT_ALGORITMI) {
+  const base = valoreGiocatore(giocatore, algoritmi).valore;
   const bonusPreferito = squadra.preferitiIds && squadra.preferitiIds.has(giocatore.id) ? 1.4 : 1;
   return base * bonusPreferito;
 }
@@ -1996,7 +2188,7 @@ function simRosaCompleta(squadra, rosaTarget, pool, minimi) {
 // gli acquisti "titolari" (o quel ruolo è già coperto per "Tu"), c'è una probabilità di
 // pescare una "scommessa": un giocatore economico e non di primo piano, magari
 // segnalato tale nella Guida, invece del migliore disponibile.
-function simSceltaChiamata(squadra, pool, setup, rosaTarget, minimi) {
+function simSceltaChiamata(squadra, pool, setup, rosaTarget, minimi, algoritmi = DEFAULT_ALGORITMI) {
   const gruppiSottoMinimo = ["POR", "DIF", "CEN", "ATT"].filter((g) => {
     if (simPossedutiGruppo(squadra, g) >= minimi[g]) return false;
     if (!simPuoComprare(squadra, SIM_RUOLO_RAPPRESENTATIVO[g], rosaTarget)) return false;
@@ -2036,8 +2228,8 @@ function simSceltaChiamata(squadra, pool, setup, rosaTarget, minimi) {
     .filter((p) => p.ruoli.some((r) => GRUPPO[r] === gruppo))
     .map((p) => {
       const ruolo = p.ruoli.find((r) => GRUPPO[r] === gruppo) || p.ruoli[0];
-      const { info } = valoreGiocatore(p);
-      return { p, ruolo, valore: simValorePercepito(squadra, p) * simFattoreRuolo(squadra, ruolo), scommessaGuida: !!(info?.isScommessa || info?.isGiovane) };
+      const { info } = valoreGiocatore(p, algoritmi);
+      return { p, ruolo, valore: simValorePercepito(squadra, p, algoritmi) * simFattoreRuolo(squadra, ruolo), scommessaGuida: !!(info?.isScommessa || info?.isGiovane) };
     })
     .sort((a, b) => b.valore - a.valore);
   if (candidati.length === 0) return null;
@@ -2080,7 +2272,7 @@ function simSceltaChiamata(squadra, pool, setup, rosaTarget, minimi) {
 // Rifiuta di rilanciare su un reparto se così facendo rischierebbe di restare senza
 // spazio per i minimi ancora scoperti negli altri reparti — anche quando il giocatore è
 // stato chiamato da un'altra squadra, non solo sulle proprie chiamate.
-function simDecisioneRilancio(squadra, giocatore, ruolo, prezzoAttuale, rosaTarget, minimi, numAttivi, pool) {
+function simDecisioneRilancio(squadra, giocatore, ruolo, prezzoAttuale, rosaTarget, minimi, numAttivi, pool, algoritmi = DEFAULT_ALGORITMI) {
   if (!simPuoComprare(squadra, ruolo, rosaTarget)) return false;
   const gruppo = GRUPPO[ruolo];
   if (simRischiaSaltoMinimo(squadra, pool, rosaTarget, minimi, gruppo)) return false;
@@ -2089,18 +2281,22 @@ function simDecisioneRilancio(squadra, giocatore, ruolo, prezzoAttuale, rosaTarg
   const maxSpendibile = simBudgetResiduo(squadra) - riserva;
   if (nextBid > maxSpendibile) return false;
 
-  const valoreBase = simValorePercepito(squadra, giocatore) * simFattoreRuolo(squadra, ruolo);
+  const valoreBase = simValorePercepito(squadra, giocatore, algoritmi) * simFattoreRuolo(squadra, ruolo);
   const sottoMinimo = simPossedutiGruppo(squadra, gruppo) < minimi[gruppo];
-  const urgenzaMinimo = sottoMinimo ? 1.6 : 1;
-  const febbreAsta = 1 + Math.min(0.5, Math.max(0, numAttivi - 2) * 0.12);
-  const bonusFascia = giocatore.stelle ? 1 + Math.max(0, giocatore.stelle - 3) * 0.06 : 1;
+  const urgenzaMinimo = sottoMinimo ? (algoritmi.urgenzaMinimo ?? 1.6) : 1;
+  const febbreAsta = 1 + Math.min((algoritmi.febbreAstaCap ?? 0.5), Math.max(0, numAttivi - 2) * (algoritmi.febbreAstaCoef ?? 0.12));
+  const bonusFascia = giocatore.stelle ? 1 + Math.max(0, giocatore.stelle - 3) * (algoritmi.bonusFasciaCoef ?? 0.06) : 1;
 
   let desiderioMax = Math.round(valoreBase * (squadra.personalita[gruppo] || 1) * urgenzaMinimo * febbreAsta * bonusFascia * (0.95 + Math.random() * 0.65));
   // Colpo di testa: a volte si va comunque oltre il valore stimato di oltre il 40%,
   // più spesso sui giocatori TOP/SEMI-TOP che scatenano vere e proprie aste al rialzo.
-  const probColpoDiTesta = 0.22 + (giocatore.stelle ? Math.max(0, giocatore.stelle - 3) * 0.05 : 0);
+  const probColpoDiTestaBase = (algoritmi.probColpoDiTestaBase ?? 0.22);
+  const probColpoDiTestaFascia = (algoritmi.probColpoDiTestaFascia ?? 0.05);
+  const probColpoDiTesta = probColpoDiTestaBase + (giocatore.stelle ? Math.max(0, giocatore.stelle - 3) * probColpoDiTestaFascia : 0);
   if (Math.random() < probColpoDiTesta) {
-    desiderioMax = Math.max(desiderioMax, Math.round(valoreBase * (1.4 + Math.random() * 0.5)));
+    const moltiplicatoreMin = (algoritmi.moltiplicatoreColpoDiTestaMin ?? 1.4);
+    const moltiplicatoreMax = (algoritmi.moltiplicatoreColpoDiTestaMax ?? 1.9);
+    desiderioMax = Math.max(desiderioMax, Math.round(valoreBase * (moltiplicatoreMin + Math.random() * (moltiplicatoreMax - moltiplicatoreMin))));
   }
   const effettivo = Math.min(maxSpendibile, Math.max(desiderioMax, 1));
   if (nextBid > effettivo) return false;
@@ -2156,7 +2352,7 @@ function SimulazioneTab({
     return (
       <div className="flex flex-col gap-5">
         <Section title="Simulazione asta (guarda il risultato, senza rilanciare tu)">
-          <p className="text-xs text-[#8FA396] leading-relaxed mb-3">
+          <p className="text-xs text-inkdim leading-relaxed mb-3">
             Un'asta completa in automatico, anche dal tuo lato: "Tu" chiama e rilancia da solo, seguendo
             i giocatori che hai segnato preferiti, il modulo personalizzato in tab Moduli e le ripartizioni
             di budget di Setup. Le CPU restano avversari con strategie proprie. Include acquisti di profondità
@@ -2165,7 +2361,7 @@ function SimulazioneTab({
           </p>
           {disponibiliReali.length < 20 ? (
             <div className="flex items-center gap-2 text-amber-300 text-xs bg-amber-400/10 border border-amber-400/30 rounded-lg p-2.5">
-              <AlertTriangle size={14} className="shrink-0" />
+              <AlertTriangle size={17} className="shrink-0" />
               Importa prima la lista giocatori nella scheda "Giocatori": servono almeno una ventina di giocatori disponibili.
             </div>
           ) : (
@@ -2190,32 +2386,32 @@ function SimulazioneTab({
                   />
                 </Field>
               </div>
-              <div className="text-[11px] text-[#8FA396] mt-2">
+              <div className="text-[11px] text-inkdim mt-2">
                 Il tetto reale per squadra è {CAP_POR + CAP_ALTRI} ({CAP_POR} portieri + {CAP_ALTRI} altri, dalle regole rosa): oltre quel numero la simulazione si ferma comunque lì.
               </div>
-              <div className="text-[11px] text-[#8FA396] mt-2">
-                Minimi per ruolo classico (derivati dall'obiettivo di rosa): <span className="text-[#EDEBE3] font-semibold">{simMinimi.POR} Por</span>,{" "}
-                <span className="text-[#EDEBE3] font-semibold">{simMinimi.DIF} Dif</span>,{" "}
-                <span className="text-[#EDEBE3] font-semibold">{simMinimi.CEN} Cen</span>,{" "}
-                <span className="text-[#EDEBE3] font-semibold">{simMinimi.ATT} Att</span>
+              <div className="text-[11px] text-inkdim mt-2">
+                Minimi per ruolo classico (derivati dall'obiettivo di rosa): <span className="text-ink font-semibold">{simMinimi.POR} Por</span>,{" "}
+                <span className="text-ink font-semibold">{simMinimi.DIF} Dif</span>,{" "}
+                <span className="text-ink font-semibold">{simMinimi.CEN} Cen</span>,{" "}
+                <span className="text-ink font-semibold">{simMinimi.ATT} Att</span>
               </div>
               <div className="mt-3">
-                <div className="text-[11px] text-[#8FA396] uppercase tracking-wide mb-1.5">
+                <div className="text-[11px] text-inkdim uppercase tracking-wide mb-1.5">
                   Squadre partecipanti ({squadreReali.length}) · budget {setup.budgetTotale} cr. ciascuna
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {squadreReali.map((s) => (
                     <span
                       key={s.id}
-                      className={`text-[11px] px-2 py-1 rounded-md border ${s.isMia ? "border-emerald-400/50 text-emerald-400 bg-emerald-400/5" : "border-[#22352A] text-[#8FA396]"}`}
+                      className={`text-[11px] px-2 py-1 rounded-md border ${s.isMia ? "border-emerald-400/50 text-emerald-400 bg-emerald-400/5" : "border-line text-inkdim"}`}
                     >
                       {s.nome}{s.isMia ? " (Tu)" : ""}
                     </span>
                   ))}
                 </div>
               </div>
-              <div className="text-[11px] text-[#8FA396] mt-3">
-                Modulo di riferimento: <span className="text-[#EDEBE3] font-semibold">{setup.modulo}</span> ·{" "}
+              <div className="text-[11px] text-inkdim mt-3">
+                Modulo di riferimento: <span className="text-ink font-semibold">{setup.modulo}</span> ·{" "}
                 {preferitiCount > 0 ? (
                   <>preferiti segnati: <span className="text-amber-400 font-semibold">{preferitiCount}</span></>
                 ) : (
@@ -2244,32 +2440,32 @@ function SimulazioneTab({
   return (
     <div className="flex flex-col gap-4">
       {/* Tabellone */}
-      <div className="rounded-xl border border-[#22352A] bg-[#0F1B14] p-5 flex flex-col items-center text-center gap-1.5">
+      <div className="rounded-xl border border-line bg-panel2 p-5 flex flex-col items-center text-center gap-1.5">
         {simAuction ? (
           <>
             <span className={`text-[10px] font-bold uppercase tracking-wide ${GRUPPO_ACCENT[GRUPPO[simAuction.ruolo]]}`}>
               {RUOLO_LABEL[simAuction.ruolo]}
             </span>
-            <div className="text-2xl font-black text-[#EDEBE3] flex items-center gap-1.5">
+            <div className="text-2xl font-black text-ink flex items-center gap-1.5">
               {simAuction.giocatore.nome}
-              {tu.preferitiIds?.has(simAuction.giocatore.id) && <Star size={16} className="text-amber-400" fill="currentColor" />}
+              {tu.preferitiIds?.has(simAuction.giocatore.id) && <Star size={19} className="text-amber-400" fill="currentColor" />}
             </div>
-            <div className="text-[11px] text-[#8FA396] font-mono">{simAuction.giocatore.squadra || "—"}</div>
+            <div className="text-[11px] text-inkdim font-mono">{simAuction.giocatore.squadra || "—"}</div>
             <BadgeFascia giocatore={simAuction.giocatore} />
             <BadgeGuida giocatore={simAuction.giocatore} />
             <div className="text-4xl font-black text-emerald-400 font-mono mt-1">{simAuction.prezzoAttuale}</div>
-            <div className="flex gap-3 text-[11px] text-[#8FA396] font-mono">
-              <span>Pr. Medio <b className="text-[#EDEBE3]">{simAuction.giocatore.prezzoMedio}</b></span>
-              <span>Consigliato <b className="text-[#EDEBE3]">{simAuction.giocatore.prezzoConsigliato}</b></span>
+            <div className="flex gap-3 text-[11px] text-inkdim font-mono">
+              <span>Pr. Medio <b className="text-ink">{simAuction.giocatore.prezzoMedio}</b></span>
+              <span>Consigliato <b className="text-ink">{simAuction.giocatore.prezzoConsigliato}</b></span>
             </div>
-            <div className="text-[11px] text-[#8FA396]">
-              in testa: <span className="font-semibold text-[#EDEBE3]">{simSquadre.find((s) => s.id === simAuction.leaderId)?.nome}</span>
+            <div className="text-[11px] text-inkdim">
+              in testa: <span className="font-semibold text-ink">{simSquadre.find((s) => s.id === simAuction.leaderId)?.nome}</span>
             </div>
           </>
         ) : tuttiCompleti ? (
-          <div className="text-lg font-bold text-[#EDEBE3]">Simulazione conclusa 🏁</div>
+          <div className="text-lg font-bold text-ink">Simulazione conclusa 🏁</div>
         ) : (
-          <div className="text-sm text-[#8FA396]">Turno di chiamata: <span className="text-[#EDEBE3] font-semibold">{callingTeam?.nome}</span></div>
+          <div className="text-sm text-inkdim">Turno di chiamata: <span className="text-ink font-semibold">{callingTeam?.nome}</span></div>
         )}
       </div>
 
@@ -2278,10 +2474,10 @@ function SimulazioneTab({
         {simSquadre.map((s) => {
           const { por, altri } = contaRosa(s.rosa);
           return (
-            <div key={s.id} className={`shrink-0 rounded-lg border border-[#22352A] bg-[#111C15] p-2.5 min-w-[120px] ${s.isUtente ? "border-emerald-400/50" : ""}`}>
+            <div key={s.id} className={`shrink-0 rounded-lg border border-line bg-panel p-2.5 min-w-[120px] ${s.isUtente ? "border-emerald-400/50" : ""}`}>
               <div className={`text-[11px] font-bold truncate ${s.isUtente ? "text-emerald-400" : s.accent}`}>{s.nome}{s.isUtente ? " ★" : ""}</div>
-              <div className="font-mono text-sm font-bold text-[#EDEBE3]">{simBudgetResiduo(s)} cr</div>
-              <div className="text-[9px] text-[#8FA396] font-mono">P {por}/{CAP_POR} · Altri {altri}</div>
+              <div className="font-mono text-sm font-bold text-ink">{simBudgetResiduo(s)} cr</div>
+              <div className="text-[9px] text-inkdim font-mono">P {por}/{CAP_POR} · Altri {altri}</div>
             </div>
           );
         })}
@@ -2298,11 +2494,11 @@ function SimulazioneTab({
       )}
 
       {/* Stato azione corrente (sola lettura) */}
-      <div className="rounded-xl border border-[#22352A] bg-[#111C15] p-4">
+      <div className="rounded-xl border border-line bg-panel p-4">
         {tuttiCompleti ? (
           <div className="flex flex-col items-center gap-3 py-2">
-            <Trophy className="text-amber-400" size={28} />
-            <p className="text-sm text-[#8FA396] text-center">
+            <Trophy className="text-amber-400" size={34} />
+            <p className="text-sm text-inkdim text-center">
               Tutte le rose hanno raggiunto l'obiettivo di {simRosaTarget} giocatori
               (minimi: {simMinimi.POR} Por · {simMinimi.DIF} Dif · {simMinimi.CEN} Cen · {simMinimi.ATT} Att).
             </p>
@@ -2321,31 +2517,31 @@ function SimulazioneTab({
             <button onClick={resetSimulazione} className="btn-secondary w-full">Nuova simulazione</button>
           </div>
         ) : simInPausa ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-[#8FA396]">
+          <div className="flex flex-col items-center gap-2 py-6 text-inkdim">
             <span className="text-sm">In pausa — premi "Riprendi" per continuare.</span>
           </div>
         ) : simAuction ? (
-          <div className="flex flex-col items-center gap-2 py-6 text-[#8FA396]">
+          <div className="flex flex-col items-center gap-2 py-6 text-inkdim">
             <span className="text-sm">{simSquadre.find((s) => s.id === simAuction.participants[simAuction.cursor])?.nome} sta decidendo...</span>
           </div>
         ) : (
-          <div className="flex flex-col items-center gap-2 py-6 text-[#8FA396]">
-            <Users size={18} />
+          <div className="flex flex-col items-center gap-2 py-6 text-inkdim">
+            <Users size={22} />
             <span className="text-sm">{callingTeam?.nome} sta scegliendo chi chiamare...</span>
           </div>
         )}
       </div>
 
       {/* Cronaca */}
-      <div className="rounded-xl border border-[#22352A] bg-[#111C15] p-3 max-h-52 overflow-y-auto flex flex-col gap-1">
+      <div className="rounded-xl border border-line bg-panel p-3 max-h-52 overflow-y-auto flex flex-col gap-1">
         {simLog.map((riga, i) => (
-          <div key={i} className="text-[11px] text-[#8FA396] leading-snug">{riga}</div>
+          <div key={i} className="text-[11px] text-inkdim leading-snug">{riga}</div>
         ))}
         <div ref={logRef} />
       </div>
 
       {!tuttiCompleti && (
-        <button onClick={resetSimulazione} className="text-xs text-[#8FA396] underline self-center">Annulla simulazione</button>
+        <button onClick={resetSimulazione} className="text-xs text-inkdim underline self-center">Annulla simulazione</button>
       )}
     </div>
   );
@@ -2383,6 +2579,142 @@ function BadgeGuida({ giocatore }) {
   );
 }
 
+// Scheda Guida per il giocatore chiamato in Asta Live: ballottaggio con l'avversario
+// diretto (se presente), specialità sui piazzati, giudizio del mister con motivi, e
+// il contesto tattico della squadra. Chiusa di default per non affollare lo schermo
+// durante l'asta; si apre a tocco.
+function GuidaGiocatoreCard({ giocatore }) {
+  const [aperto, setAperto] = useState(false);
+  const { guida, info } = useMemo(() => trovaGuidaGiocatore(giocatore), [giocatore]);
+
+  if (!guida) {
+    return (
+      <div className="bg-inkbg border border-line rounded-lg px-3 py-2 text-[11px] text-inkdim flex items-center gap-1.5">
+        <BookOpen size={14} className="shrink-0" /> Nessun dato Guida per {giocatore.squadra || "questa squadra"}.
+      </div>
+    );
+  }
+
+  const percentualeMia = info?.rivale ? Math.round(info.probTitolare * 100) : null;
+
+  const badges = [];
+  if (info?.isRigorista) badges.push({ label: "RIGORISTA", cls: "bg-amber-400/15 text-amber-300" });
+  if (info?.isPunizioni) badges.push({ label: "PUNIZIONI", cls: "bg-amber-400/15 text-amber-300" });
+  if (info?.isAngoli) badges.push({ label: "ANGOLI", cls: "bg-amber-400/15 text-amber-300" });
+  if (info?.isGiovane) badges.push({ label: "GIOVANE DA SEGUIRE", cls: "bg-violet-400/15 text-violet-300" });
+  if (info?.isScommessa) badges.push({ label: "SCOMMESSA", cls: "bg-sky-400/15 text-sky-300" });
+
+  return (
+    <div className="bg-inkbg border border-line rounded-lg overflow-hidden">
+      <button type="button" onClick={() => setAperto((v) => !v)} className="w-full flex items-center justify-between px-3 py-2">
+        <span className="flex items-center gap-1.5 text-[11px] text-inkdim uppercase font-bold">
+          <BookOpen size={14} /> Guida · {guida.teamName}
+        </span>
+        <ChevronDown size={17} className={`shrink-0 text-inkdim transition-transform ${aperto ? "rotate-180" : ""}`} />
+      </button>
+      {aperto && (
+        <div className="px-3 pb-3 space-y-2.5 border-t border-line pt-2.5">
+          <div className="flex items-center justify-between text-[11px] text-inkdim">
+            <span>{guida.modulo} · {guida.allenatore}</span>
+            <span>Att {"★".repeat(guida.rating?.attacco || 0)}{"☆".repeat(5 - (guida.rating?.attacco || 0))} · Dif {"★".repeat(guida.rating?.difesa || 0)}{"☆".repeat(5 - (guida.rating?.difesa || 0))}</span>
+          </div>
+
+          {info?.rivale ? (
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1">
+                <span className="font-mono font-bold text-emerald-400">{percentualeMia}%</span>
+                <span className="text-ink font-semibold truncate px-2 text-center">{giocatore.nome} · {info.rivale.nome}</span>
+                <span className="font-mono font-bold text-inkdim">{info.rivale.percentuale}%</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-panel overflow-hidden flex">
+                <div className="h-full bg-emerald-400" style={{ width: `${percentualeMia}%` }} />
+                <div className="h-full bg-line" style={{ width: `${info.rivale.percentuale}%` }} />
+              </div>
+            </div>
+          ) : info?.probTitolare >= 1 ? (
+            <p className="text-[11px] text-emerald-300">Titolare fisso secondo la Guida.</p>
+          ) : (
+            <p className="text-[11px] text-inkdim">{giocatore.nome} non è indicato tra i titolari dalla Guida.</p>
+          )}
+
+          {badges.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {badges.map((b) => (
+                <span key={b.label} className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${b.cls}`}>{b.label}</span>
+              ))}
+            </div>
+          )}
+
+          {(info?.isValorizzato || info?.isPenalizzato) && info.motivi.length > 0 && (
+            <div className={`rounded-md px-2.5 py-1.5 border ${info.isValorizzato ? "border-emerald-400/30 bg-emerald-400/5" : "border-rose-400/30 bg-rose-400/5"}`}>
+              <div className={`flex items-center gap-1.5 text-[10px] font-bold mb-1 ${info.isValorizzato ? "text-emerald-300" : "text-rose-300"}`}>
+                {info.isValorizzato ? <ThumbsUp size={13} /> : <ThumbsDown size={13} />}
+                {info.isValorizzato ? "Valorizzato dal mister" : "Penalizzato dal mister"}
+              </div>
+              {info.motivi.map((m, i) => <div key={i} className="text-[11px] text-inkdim">· {m}</div>)}
+            </div>
+          )}
+
+          {guida.ruoliChiave?.descrizione && (
+            <p className="text-[11px] text-inkdim">{guida.ruoliChiave.descrizione}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Pannello "chi altro potrebbe volerlo" in Asta Live: stima, per ciascun avversario,
+// quanto è interessato al ruolo del giocatore chiamato (analizzaSquadra +
+// interesseSquadraPerRuolo) e apre con un consiglio rapido di strategia che confronta
+// il tuo bisogno (fattoreRuolo, lo stesso usato per il tetto di spesa consigliato) con
+// quello stimato degli avversari: aspettare, spendere, o rilanciare solo per disturbo.
+function PannelloInteresseAvversari({ altreSquadre, gById, ruolo, gruppo, setup, fattoreRuolo }) {
+  const [aperto, setAperto] = useState(false);
+
+  const righe = useMemo(() => {
+    return altreSquadre
+      .map((s) => ({ squadra: s, ...interesseSquadraPerRuolo(analizzaSquadra(s, gById), ruolo, gruppo, setup) }))
+      .sort((a, b) => LIVELLO_INTERESSE_ORDINE[b.livello] - LIVELLO_INTERESSE_ORDINE[a.livello] || b.residuoGruppo - a.residuoGruppo);
+  }, [altreSquadre, gById, ruolo, gruppo, setup]);
+
+  if (righe.length === 0) return null;
+
+  const numInteressati = righe.filter((r) => r.livello === "alto" || r.livello === "medio").length;
+  const verdetto = testoStrategiaInteresse(fattoreRuolo, numInteressati, righe.length);
+
+  return (
+    <div className="bg-inkbg border border-line rounded-lg overflow-hidden">
+      <div className="px-3 pt-2.5 pb-2">
+        <div className="flex items-center gap-1.5 text-[11px] text-inkdim uppercase font-bold mb-1">
+          <ShieldAlert size={14} /> Interesse avversari
+        </div>
+        <p className="text-xs font-semibold leading-snug">{verdetto}</p>
+      </div>
+      <button
+        type="button" onClick={() => setAperto((v) => !v)}
+        className="w-full flex items-center justify-between px-3 py-1.5 border-t border-line text-[11px] text-inkdim"
+      >
+        <span>{numInteressati}/{righe.length} squadre potenzialmente interessate</span>
+        <ChevronDown size={17} className={`shrink-0 transition-transform ${aperto ? "rotate-180" : ""}`} />
+      </button>
+      {aperto && (
+        <div className="px-3 pb-3 space-y-1.5 border-t border-line pt-2.5">
+          {righe.map(({ squadra: s, livello, label, residuoGruppo, creditoMedioSlot, giaPresi }) => (
+            <div key={s.id} className="flex items-center justify-between gap-2 text-[11px]">
+              <span className="truncate flex-1 font-semibold">{s.nome}</span>
+              <span className="text-inkdim font-mono shrink-0 text-right">
+                {giaPresi} {ruolo} · {livello === "saturo" ? "rosa completa" : `${residuoGruppo} cr${creditoMedioSlot ? ` (~${creditoMedioSlot}/slot)` : ""}`}
+              </span>
+              <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded ${LIVELLO_INTERESSE_CLS[livello]}`}>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Riepilogo di fine simulazione: la rosa composta da OGNI squadra partecipante
 // (compresa "Tu", evidenziata), per reparto, con lo speso totale. Per "Tu" mostra
 // anche quanti dei tuoi preferiti reali sei riuscito ad aggiudicarti in questa prova.
@@ -2396,10 +2728,10 @@ function RiepilogoSquadre({ squadre, gById }) {
         const preferitiTotali = s.preferitiIds ? s.preferitiIds.size : 0;
         const preferitiPresi = s.rosa.filter((r) => s.preferitiIds?.has(r.giocatoreId)).length;
         return (
-          <div key={s.id} className={`rounded-lg border p-3 ${s.isUtente ? "border-emerald-400/50 bg-emerald-400/5" : "border-[#22352A] bg-[#0F1B14]"}`}>
+          <div key={s.id} className={`rounded-lg border p-3 ${s.isUtente ? "border-emerald-400/50 bg-emerald-400/5" : "border-line bg-panel2"}`}>
             <div className="flex items-center justify-between mb-2">
               <span className={`text-xs font-bold ${s.isUtente ? "text-emerald-400" : s.accent}`}>{s.nome}{s.isUtente ? " (Tu)" : ""}</span>
-              <span className="font-mono text-[11px] text-[#8FA396]">
+              <span className="font-mono text-[11px] text-inkdim">
                 speso {speso} · residuo {simBudgetResiduo(s)}
                 {s.isUtente && preferitiTotali > 0 && <> · preferiti {preferitiPresi}/{preferitiTotali}</>}
               </span>
@@ -2408,7 +2740,7 @@ function RiepilogoSquadre({ squadre, gById }) {
               {["POR", "DIF", "CEN", "ATT"].map((g) => (
                 <div key={g}>
                   <span className={`font-mono ${GRUPPO_ACCENT[g]}`}>{GRUPPO_LABEL[g]}: </span>
-                  <span className="text-[#8FA396]">
+                  <span className="text-inkdim">
                     {perGruppo[g].map((r) => {
                       const nome = gById[r.giocatoreId]?.nome;
                       const preferito = s.isUtente && s.preferitiIds?.has(r.giocatoreId);
@@ -2443,19 +2775,19 @@ function RosaTab({ giocatori, ioSquadra, budgetSpeso, budgetResiduo, annullaAsse
       </div>
 
       <div className="grid grid-cols-2 gap-2">
-        <div className="bg-[#111C15] border border-[#22352A] rounded-lg p-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8FA396] mb-1">
+        <div className="bg-panel border border-line rounded-lg p-2.5">
+          <div className="flex items-center justify-between text-xs text-inkdim mb-1">
             <span>Portieri</span><span className="font-mono">{porCount}/{CAP_POR}</span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#0A120D] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-inkbg overflow-hidden">
             <div className={`h-full ${porCount >= CAP_POR ? "bg-rose-400" : "bg-amber-400"}`} style={{ width: `${Math.min(100, (porCount / CAP_POR) * 100)}%` }} />
           </div>
         </div>
-        <div className="bg-[#111C15] border border-[#22352A] rounded-lg p-2.5">
-          <div className="flex items-center justify-between text-xs text-[#8FA396] mb-1">
+        <div className="bg-panel border border-line rounded-lg p-2.5">
+          <div className="flex items-center justify-between text-xs text-inkdim mb-1">
             <span>Altri ruoli</span><span className="font-mono">{altriCount}/{CAP_ALTRI}</span>
           </div>
-          <div className="h-1.5 rounded-full bg-[#0A120D] overflow-hidden">
+          <div className="h-1.5 rounded-full bg-inkbg overflow-hidden">
             <div className={`h-full ${altriCount >= CAP_ALTRI ? "bg-rose-400" : "bg-emerald-400"}`} style={{ width: `${Math.min(100, (altriCount / CAP_ALTRI) * 100)}%` }} />
           </div>
         </div>
@@ -2468,7 +2800,7 @@ function RosaTab({ giocatori, ioSquadra, budgetSpeso, budgetResiduo, annullaAsse
       <Section title={`Ripartizione budget per reparto (${totalSplit}%)`}>
         {totalSplit !== 100 && (
           <div className="flex items-center gap-1.5 text-amber-400 text-xs mb-2">
-            <AlertTriangle size={13} /> La somma dovrebbe essere 100%
+            <AlertTriangle size={16} /> La somma dovrebbe essere 100%
           </div>
         )}
         <div className="space-y-2">
@@ -2490,23 +2822,23 @@ function RosaTab({ giocatori, ioSquadra, budgetSpeso, budgetResiduo, annullaAsse
         <Section key={g} title={`${GRUPPO_LABEL[g]} (${perGruppo[g].length})`}>
           <div className="space-y-1.5">
             {perGruppo[g].length === 0 && (
-              <p className="text-sm text-[#8FA396] px-1">Nessun giocatore ancora in questo reparto.</p>
+              <p className="text-sm text-inkdim px-1">Nessun giocatore ancora in questo reparto.</p>
             )}
             {perGruppo[g].map((r) => {
               const giocatore = gById[r.giocatoreId];
               if (!giocatore) return null;
               return (
-                <div key={r.giocatoreId} className="flex items-center justify-between rounded-lg px-3 py-2 border bg-[#111C15] border-[#22352A]">
+                <div key={r.giocatoreId} className="flex items-center justify-between rounded-lg px-3 py-2 border bg-panel border-line">
                   <div className="flex items-center gap-2 min-w-0">
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${GRUPPO_BG[g]} ${GRUPPO_ACCENT[g]}`}>{r.ruolo}</span>
                     <div className="min-w-0">
                       <div className="text-sm font-semibold truncate">{giocatore.nome}</div>
-                      <div className="text-[11px] text-[#8FA396] truncate">{giocatore.squadra} · {giocatore.ruoli.join("/")}</div>
+                      <div className="text-[11px] text-inkdim truncate">{giocatore.squadra} · {giocatore.ruoli.join("/")}</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="font-mono text-sm text-emerald-400">{r.prezzo} cr</span>
-                    <button onClick={() => annullaAssegnazione(ioSquadra.id, r.giocatoreId)} className="text-[#8FA396] p-1"><Undo2 size={14} /></button>
+                    <button onClick={() => annullaAssegnazione(ioSquadra.id, r.giocatoreId)} className="text-inkdim p-1"><Undo2 size={17} /></button>
                   </div>
                 </div>
               );
@@ -2529,7 +2861,7 @@ function RuoliModuliPanel({ rosa, gById, compatto, nascondiRuoli }) {
     <div className="space-y-2.5">
       {!nascondiRuoli && (
         <div>
-          <div className="text-[10px] text-[#8FA396] uppercase font-bold mb-1">Giocatori per ruolo mantra</div>
+          <div className="text-[10px] text-inkdim uppercase font-bold mb-1">Giocatori per ruolo mantra</div>
           <div className="grid grid-cols-6 gap-1">
             {RUOLI.map((r) => (
               <div key={r} className={`rounded-md border px-1 py-1 text-center ${GRUPPO_BORDER[GRUPPO[r]]} ${GRUPPO_BG[GRUPPO[r]]}`}>
@@ -2542,10 +2874,10 @@ function RuoliModuliPanel({ rosa, gById, compatto, nascondiRuoli }) {
       )}
 
       <div>
-        <div className="text-[10px] text-[#8FA396] uppercase font-bold mb-1">Moduli che puoi schierare</div>
+        <div className="text-[10px] text-inkdim uppercase font-bold mb-1">Moduli che puoi schierare</div>
         {!haPortiere && (
           <div className="flex items-center gap-1.5 text-[11px] text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded-md px-2 py-1 mb-1.5">
-            <AlertTriangle size={12} className="shrink-0" /> Manca un portiere: nessun modulo è schierabile.
+            <AlertTriangle size={14} className="shrink-0" /> Manca un portiere: nessun modulo è schierabile.
           </div>
         )}
         {moduliOk.length > 0 ? (
@@ -2555,12 +2887,12 @@ function RuoliModuliPanel({ rosa, gById, compatto, nascondiRuoli }) {
             ))}
           </div>
         ) : (
-          <p className="text-xs text-[#8FA396]">Ancora nessun modulo completamente copribile con la rosa attuale.</p>
+          <p className="text-xs text-inkdim">Ancora nessun modulo completamente copribile con la rosa attuale.</p>
         )}
         {!compatto && moduliNo.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-1.5">
             {moduliNo.map(([m, v]) => (
-              <span key={m} className="text-[11px] font-mono px-2 py-1 rounded-md bg-[#0A120D] border border-[#22352A] text-[#8FA396]">
+              <span key={m} className="text-[11px] font-mono px-2 py-1 rounded-md bg-inkbg border border-line text-inkdim">
                 {m} · {v.assegnati}/{v.totale}
               </span>
             ))}
@@ -2570,6 +2902,91 @@ function RuoliModuliPanel({ rosa, gById, compatto, nascondiRuoli }) {
     </div>
   );
 }
+// Analisi generica di una squadra (usata dalla tab Squadre e dal pannello "Interesse
+// avversari" in Asta Live): crediti spesi/residui, anche spalmati per reparto, conteggio
+// giocatori per reparto/ruolo Mantra, slot di rosa ancora liberi (Por/altri, coi CAP
+// dell'asta), indice di forza rosa ed efficienza di spesa in base al Valore Reale.
+function analizzaSquadra(s, gById) {
+  const speso = s.rosa.reduce((acc, r) => acc + (r.prezzo || 0), 0);
+  const residuo = s.budgetTotale - speso;
+  const conteggio = { POR: 0, DIF: 0, CEN: 0, ATT: 0 };
+  const spesoPerGruppo = { POR: 0, DIF: 0, CEN: 0, ATT: 0 };
+  let valoreRosaTotale = 0;
+  s.rosa.forEach((r) => {
+    const gruppo = GRUPPO[r.ruolo];
+    conteggio[gruppo] += 1;
+    spesoPerGruppo[gruppo] += (r.prezzo || 0);
+    const giocatore = gById[r.giocatoreId];
+    if (giocatore) valoreRosaTotale += valoreGiocatore(giocatore).valore;
+  });
+  const conteggioRuoli = contaRuoliEleggibili(s.rosa, gById);
+  const { por: porCount, altri: altriCount } = contaRosa(s.rosa);
+  const slotResidui = Math.max(0, CAP_POR - porCount) + Math.max(0, CAP_ALTRI - altriCount);
+  const creditoMedioSlot = slotResidui > 0 ? residuo / slotResidui : 0;
+  const efficienza = speso > 0 ? valoreRosaTotale / speso : null;
+  const repartiScoperti = (["DIF", "CEN", "ATT"]).filter((g) => conteggio[g] === 0);
+  return { squadra: s, speso, residuo, conteggio, spesoPerGruppo, conteggioRuoli, porCount, altriCount, slotResidui, creditoMedioSlot, valoreRosaTotale, efficienza, repartiScoperti };
+}
+
+// Stima quanto un reparto è ancora "appetibile" per una squadra avversaria durante
+// l'Asta Live, incrociando: slot di rosa ancora liberi per quel ruolo, quota di budget
+// residua nel reparto (secondo la stessa ripartizione target impostata in Setup) e
+// quanti giocatori di quel ruolo Mantra ha già in rosa. Non sapendo il modulo scelto
+// dagli avversari, il "bisogno" è valutato a livello di reparto (POR/DIF/CEN/ATT),
+// non di singolo slot tattico come per la propria rosa.
+const LIVELLO_INTERESSE_ORDINE = { alto: 3, medio: 2, basso: 1, saturo: 0 };
+const LIVELLO_INTERESSE_LABEL = { alto: "INTERESSE ALTO", medio: "INTERESSE MEDIO", basso: "INTERESSE BASSO", saturo: "ROSA COMPLETA" };
+const LIVELLO_INTERESSE_CLS = {
+  alto: "bg-rose-400/15 text-rose-300", medio: "bg-amber-400/15 text-amber-300",
+  basso: "bg-line text-inkdim", saturo: "bg-line text-inkdim",
+};
+
+function interesseSquadraPerRuolo(analisi, ruolo, gruppo, setup) {
+  const { squadra, residuo, conteggio, spesoPerGruppo, conteggioRuoli, porCount, altriCount } = analisi;
+  const slotLiberiRuolo = ruolo === "Por" ? Math.max(0, CAP_POR - porCount) : Math.max(0, CAP_ALTRI - altriCount);
+  const giaPresi = conteggioRuoli[ruolo] || 0;
+
+  if (slotLiberiRuolo === 0 || residuo <= 0) {
+    return { livello: "saturo", label: LIVELLO_INTERESSE_LABEL.saturo, residuoGruppo: 0, creditoMedioSlot: 0, giaPresi };
+  }
+
+  const allocGruppo = Math.round((squadra.budgetTotale * (setup.split[gruppo] ?? 25)) / 100);
+  const residuoGruppo = allocGruppo - (spesoPerGruppo[gruppo] || 0);
+  const creditoMedioSlot = Math.round(residuoGruppo / slotLiberiRuolo);
+  // Credito medio "normale" per slot, come metro di paragone: budget totale diviso
+  // tutti gli slot di rosa possibili (stesso per tutte le squadre, stesso setup.budgetTotale).
+  const baselineSlot = (setup.budgetTotale || squadra.budgetTotale) / (CAP_POR + CAP_ALTRI);
+
+  let livello = "medio";
+  if (residuoGruppo <= 0 || giaPresi >= 3) livello = "basso";
+  else if (conteggio[gruppo] === 0) livello = "alto"; // reparto ancora del tutto scoperto: urgenza
+  else if (creditoMedioSlot >= baselineSlot) livello = "alto";
+  else if (creditoMedioSlot < baselineSlot * 0.4) livello = "basso";
+
+  return { livello, label: LIVELLO_INTERESSE_LABEL[livello], residuoGruppo, creditoMedioSlot, giaPresi };
+}
+
+// Confronta il bisogno stimato per "Tu" (derivato dallo stesso fattoreRuolo già usato
+// per il tetto di spesa consigliato in Asta Live) con quanti avversari sembrano
+// interessati, per un consiglio rapido di strategia (aspettare, spendere, disturbare).
+function testoStrategiaInteresse(fattoreRuoloMio, numInteressati, numAltre) {
+  const mioLivello = fattoreRuoloMio >= 1.1 ? "alto" : fattoreRuoloMio <= 0.8 ? "basso" : "medio";
+  const nessunRivale = numInteressati === 0;
+  if (mioLivello === "alto") {
+    return nessunRivale
+      ? "Ti serve e nessun avversario sembra pronto a spingere: puoi trattare con calma."
+      : `Ti serve, e anche ${numInteressati}/${numAltre} avversari sono interessati: preparati a spendere.`;
+  }
+  if (mioLivello === "basso") {
+    return nessunRivale
+      ? "Non ti serve e nessun avversario sembra interessato: lascialo andare, il prezzo dovrebbe restare basso."
+      : `Non ti serve, ma ${numInteressati}/${numAltre} avversari lo cercano: un rilancio di disturbo potrebbe fargli spendere di più.`;
+  }
+  return nessunRivale
+    ? "Nessun avversario sembra interessato: puoi negoziare con margine."
+    : `${numInteressati}/${numAltre} avversari potrebbero essere interessati: valuta il rilancio con un margine di sicurezza.`;
+}
+
 // Oltre a crediti/reparti mostra un indice di "forza rosa" (somma del valore reale
 // stimato dei giocatori presi, corretto con i dati della Guida) e un indicatore
 // di efficienza di spesa (valore reale ottenuto per credito speso), utile per capire
@@ -2579,26 +2996,7 @@ function SquadreTab({ squadre, giocatori }) {
   const gById = Object.fromEntries(giocatori.map((g) => [g.id, g]));
   const [espansa, setEspansa] = useState(null); // id squadra con pannello ruoli/moduli aperto
 
-  const analisiSquadre = useMemo(() => {
-    return squadre.map((s) => {
-      const speso = s.rosa.reduce((acc, r) => acc + (r.prezzo || 0), 0);
-      const residuo = s.budgetTotale - speso;
-      const conteggio = { POR: 0, DIF: 0, CEN: 0, ATT: 0 };
-      let valoreRosaTotale = 0;
-      s.rosa.forEach((r) => {
-        conteggio[GRUPPO[r.ruolo]] += 1;
-        const giocatore = gById[r.giocatoreId];
-        if (giocatore) valoreRosaTotale += valoreGiocatore(giocatore).valore;
-      });
-      const conteggioRuoli = contaRuoliEleggibili(s.rosa, gById);
-      const { por: porCount, altri: altriCount } = contaRosa(s.rosa);
-      const slotResidui = Math.max(0, CAP_POR - porCount) + Math.max(0, CAP_ALTRI - altriCount);
-      const creditoMedioSlot = slotResidui > 0 ? residuo / slotResidui : 0;
-      const efficienza = speso > 0 ? valoreRosaTotale / speso : null;
-      const repartiScoperti = (["DIF", "CEN", "ATT"]).filter((g) => conteggio[g] === 0);
-      return { squadra: s, speso, residuo, conteggio, conteggioRuoli, porCount, altriCount, slotResidui, creditoMedioSlot, valoreRosaTotale, efficienza, repartiScoperti };
-    });
-  }, [squadre, giocatori]);
+  const analisiSquadre = useMemo(() => squadre.map((s) => analizzaSquadra(s, gById)), [squadre, giocatori]);
 
   const ranking = useMemo(
     () => [...analisiSquadre].sort((a, b) => b.valoreRosaTotale - a.valoreRosaTotale).map((a) => a.squadra.id),
@@ -2609,23 +3007,58 @@ function SquadreTab({ squadre, giocatori }) {
     ? efficienzaValide.reduce((best, a) => (a.efficienza > best.efficienza ? a : best)).squadra.id
     : null;
 
+  // Una riga per ogni giocatore in ogni rosa (le squadre senza acquisti fanno comunque
+  // una riga, con le colonne giocatore vuote), con sia i totali di squadra sia i dettagli
+  // del singolo acquisto: pensato come export completo per archiviare/condividere l'esito
+  // dell'asta, non per essere reimportato.
+  function esportaRoseCsv() {
+    const header = "Squadra;BudgetTotale;Speso;Residuo;IndiceForzaRosa;EfficienzaSpesaPct;Giocatore;RuoloAssegnato;RuoliMantra;SquadraReale;Prezzo;Quotazione;Fvm;ValoreReale";
+    const righe = [];
+    analisiSquadre.forEach((a) => {
+      const s = a.squadra;
+      const effPct = a.efficienza !== null ? Math.round(a.efficienza * 100) : "";
+      const base = [s.nome, s.budgetTotale, a.speso, a.residuo, a.valoreRosaTotale.toFixed(1), effPct];
+      if (s.rosa.length === 0) {
+        righe.push([...base, "", "", "", "", "", "", "", ""].join(";"));
+        return;
+      }
+      s.rosa.forEach((r) => {
+        const g = gById[r.giocatoreId];
+        const valore = g ? valoreGiocatore(g).valore : "";
+        righe.push([
+          ...base,
+          g?.nome || "", r.ruolo, (g?.ruoli || []).join(","), g?.squadra || "",
+          r.prezzo ?? "", g?.quotazione ?? "", g?.fvm ?? "", valore,
+        ].join(";"));
+      });
+    });
+    scaricaFile(`fantacalcio-rose-${dataFileOggi()}.csv`, [header, ...righe].join("\n"));
+  }
+
   return (
     <div className="space-y-3">
-      <p className="text-xs text-[#8FA396]">
+      <p className="text-xs text-inkdim">
         Forza rosa = valore reale stimato dai dati della Guida (titolarità, specialisti, giudizio del mister). Efficienza = valore reale ottenuto per ogni credito speso: sopra 100% vuol dire aver comprato bene.
       </p>
+      <button
+        onClick={esportaRoseCsv}
+        disabled={squadre.every((s) => s.rosa.length === 0)}
+        className="btn-secondary w-full inline-flex items-center justify-center gap-1.5 text-xs px-3 py-1.5 disabled:opacity-40"
+      >
+        <Download size={16} /> Scarica rose in CSV
+      </button>
       {analisiSquadre.map((a) => {
         const s = a.squadra;
         const posizione = ranking.indexOf(s.id) + 1;
         const effPct = a.efficienza !== null ? Math.round(a.efficienza * 100) : null;
         return (
-          <div key={s.id} className={`rounded-xl border p-3 ${s.isMia ? "border-emerald-400/50 bg-emerald-400/5" : "border-[#22352A] bg-[#111C15]"}`}>
+          <div key={s.id} className={`rounded-xl border p-3 ${s.isMia ? "border-emerald-400/50 bg-emerald-400/5" : "border-line bg-panel"}`}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-bold text-sm flex items-center gap-1.5 truncate">
                 {s.isMia && <span className="text-[10px] font-bold text-emerald-400 shrink-0">TU</span>}
                 <span className="truncate">{s.nome}</span>
                 {s.rosa.length > 0 && (
-                  <span className="text-[10px] font-mono text-[#8FA396] shrink-0">#{posizione} forza</span>
+                  <span className="text-[10px] font-mono text-inkdim shrink-0">#{posizione} forza</span>
                 )}
                 {miglioreEfficienzaId === s.id && (
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-400/15 text-emerald-300 shrink-0">MIGLIOR AFFARE</span>
@@ -2647,16 +3080,16 @@ function SquadreTab({ squadre, giocatori }) {
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 mb-1.5">
-              <div className="bg-[#0A120D] rounded-md px-2 py-1.5 border border-[#22352A]">
-                <div className="text-[9px] text-[#8FA396] uppercase">Indice forza rosa</div>
-                <div className="font-mono text-sm font-bold text-[#EDEBE3]">{a.valoreRosaTotale ? a.valoreRosaTotale.toFixed(1) : "—"}</div>
+              <div className="bg-inkbg rounded-md px-2 py-1.5 border border-line">
+                <div className="text-[9px] text-inkdim uppercase">Indice forza rosa</div>
+                <div className="font-mono text-sm font-bold text-ink">{a.valoreRosaTotale ? a.valoreRosaTotale.toFixed(1) : "—"}</div>
               </div>
-              <div className="bg-[#0A120D] rounded-md px-2 py-1.5 border border-[#22352A]">
-                <div className="text-[9px] text-[#8FA396] uppercase">Efficienza spesa</div>
-                <div className={`font-mono text-sm font-bold flex items-center gap-1 ${effPct === null ? "text-[#8FA396]" : effPct >= 105 ? "text-emerald-400" : effPct >= 95 ? "text-amber-400" : "text-rose-400"}`}>
+              <div className="bg-inkbg rounded-md px-2 py-1.5 border border-line">
+                <div className="text-[9px] text-inkdim uppercase">Efficienza spesa</div>
+                <div className={`font-mono text-sm font-bold flex items-center gap-1 ${effPct === null ? "text-inkdim" : effPct >= 105 ? "text-emerald-400" : effPct >= 95 ? "text-amber-400" : "text-rose-400"}`}>
                   {effPct === null ? "—" : (
                     <>
-                      {effPct >= 100 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                      {effPct >= 100 ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
                       {effPct}%
                     </>
                   )}
@@ -2664,23 +3097,23 @@ function SquadreTab({ squadre, giocatori }) {
               </div>
             </div>
 
-            <div className="text-[10px] text-[#8FA396] font-mono mb-1.5">
+            <div className="text-[10px] text-inkdim font-mono mb-1.5">
               {a.porCount}/{CAP_POR} portieri · {a.altriCount}/{CAP_ALTRI} altri ruoli · ~{Math.round(a.creditoMedioSlot)} cr/slot residuo
             </div>
 
             {a.repartiScoperti.length > 0 && (
               <div className="flex items-center gap-1.5 text-[11px] text-amber-300 bg-amber-400/10 border border-amber-400/30 rounded-md px-2 py-1 mb-1.5">
-                <ShieldAlert size={13} className="shrink-0" />
+                <ShieldAlert size={16} className="shrink-0" />
                 <span>Reparto scoperto: {a.repartiScoperti.map((g) => GRUPPO_LABEL[g]).join(", ")} — probabile rilancio in arrivo</span>
               </div>
             )}
 
             <button
               onClick={() => setEspansa((cur) => (cur === s.id ? null : s.id))}
-              className="w-full flex items-center justify-between text-xs text-[#8FA396] py-1.5 border-t border-[#22352A] mt-0.5"
+              className="w-full flex items-center justify-between text-xs text-inkdim py-1.5 border-t border-line mt-0.5"
             >
-              <span className="flex items-center gap-1.5"><LayoutTemplate size={13} /> Ruoli mantra e moduli</span>
-              <ChevronDown size={14} className={`transition-transform ${espansa === s.id ? "rotate-180" : ""}`} />
+              <span className="flex items-center gap-1.5"><LayoutTemplate size={16} /> Ruoli mantra e moduli</span>
+              <ChevronDown size={17} className={`transition-transform ${espansa === s.id ? "rotate-180" : ""}`} />
             </button>
             {espansa === s.id && (
               <div className="pt-2">
@@ -2699,7 +3132,7 @@ function SquadreTab({ squadre, giocatori }) {
 // valorizzati/penalizzati, giovane da seguire, scommessa) e sovrappone un badge
 // di stato incrociando il nome con la lista giocatori/rose ("in lista", "in rosa tua",
 // "preso da altri"), così durante l'asta vedi subito chi è ancora disponibile.
-const SENTIMENT_DOT = { positive: "bg-emerald-400", neutral: "bg-[#8FA396]", negative: "bg-rose-400" };
+const SENTIMENT_DOT = { positive: "bg-emerald-400", neutral: "bg-inkdim", negative: "bg-rose-400" };
 
 function statoGiocatoreDaGuida(nomeGuida, giocatori, squadre) {
   const target = normalizza(nomeGuida);
@@ -2707,7 +3140,7 @@ function statoGiocatoreDaGuida(nomeGuida, giocatori, squadre) {
     const n = normalizza(g.nome);
     return n === target || n.includes(target) || target.includes(n);
   });
-  if (!giocatore) return { label: "non in lista", cls: "bg-[#22352A] text-[#8FA396]" };
+  if (!giocatore) return { label: "non in lista", cls: "bg-line text-inkdim" };
   if (giocatore.stato === "mio") return { label: "in rosa tua", cls: "bg-emerald-400/15 text-emerald-300 border border-emerald-400/40" };
   if (giocatore.stato === "preso_altri") {
     const sq = squadre.find((s) => s.id === giocatore.presoDa);
@@ -2721,52 +3154,155 @@ function StatoBadge({ nomeGuida, giocatori, squadre }) {
   return <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded shrink-0 ${stato.cls}`}>{stato.label}</span>;
 }
 
-function GuidaTab({ giocatori, squadre }) {
+function GuidaTab({ giocatori, squadre, aggiornataIl, aggiornaGuida, ripristinaGuida }) {
+  // "aggiornataIl" cambia valore a ogni aggiornaGuida/ripristinaGuida: usarlo come
+  // dipendenza ricalcola la lista squadre sui dati freschi senza smontare la tab (che
+  // farebbe perdere il pannello aperto e il messaggio di conferma appena mostrato).
   const squadreOrdinate = useMemo(() => {
     return Object.values(guideDatabase)
       .filter((t) => t && t.teamId)
       .sort((a, b) => a.teamName.localeCompare(b.teamName));
-  }, []);
+  }, [aggiornataIl]);
   const [teamId, setTeamId] = useState(squadreOrdinate.find((t) => t.modulo)?.teamId || squadreOrdinate[0]?.teamId);
+  // Se un aggiornamento rimpiazza del tutto il database con id squadra diversi, la
+  // selezione corrente può restare orfana: si ripiega sulla prima squadra disponibile.
+  useEffect(() => {
+    if (squadreOrdinate.length > 0 && !squadreOrdinate.some((t) => t.teamId === teamId)) {
+      setTeamId(squadreOrdinate.find((t) => t.modulo)?.teamId || squadreOrdinate[0]?.teamId);
+    }
+  }, [squadreOrdinate, teamId]);
   const team = guideDatabase[teamId];
 
-  if (!team) return <p className="text-sm text-[#8FA396]">Nessun dato disponibile.</p>;
+  const [mostraAggiorna, setMostraAggiorna] = useState(false);
+  const [mostraTesto, setMostraTesto] = useState(false);
+  const [testoJson, setTestoJson] = useState("");
+  const [msgAggiorna, setMsgAggiorna] = useState("");
+  const fileInputRef = useRef(null);
+
+  // Valida il JSON caricato/incollato: deve avere la stessa forma di guideDatabase.json,
+  // cioè un oggetto { "sluqsquadra": { teamId, teamName, ... }, ... }. "unisci" aggiorna
+  // solo le squadre presenti nel file (utile per caricare aggiornamenti parziali durante
+  // la settimana), "sostituisci" rimpiazza l'intero database.
+  function validaEApplica(testoOrigine, modalita) {
+    let parsed;
+    try {
+      parsed = JSON.parse(testoOrigine);
+    } catch (e) {
+      setMsgAggiorna("JSON non valido: controlla il file o il testo incollato.");
+      return;
+    }
+    const valido = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+      && Object.values(parsed).every((v) => v && typeof v === "object");
+    if (!valido) {
+      setMsgAggiorna('Formato non riconosciuto: serve un oggetto tipo { "milan": { "teamId": "milan", ... }, ... } come guideDatabase.json.');
+      return;
+    }
+    const n = Object.keys(parsed).length;
+    aggiornaGuida(parsed, modalita);
+    setMsgAggiorna(modalita === "sostituisci" ? `Guida sostituita: ${n} squadre.` : `Guida aggiornata: ${n} squadre unite ai dati esistenti.`);
+    setTestoJson("");
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => validaEApplica(String(evt.target.result || ""), "unisci");
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
+  if (!team) return <p className="text-sm text-inkdim">Nessun dato disponibile.</p>;
 
   const haDati = !!team.modulo;
 
   return (
     <div className="space-y-4">
+      <div className="bg-panel border border-line rounded-xl p-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-xs font-bold uppercase tracking-wide text-inkdim">Dati Guida</div>
+            <div className="text-[11px] text-inkdim mt-0.5 truncate">
+              {aggiornataIl ? `Aggiornati il ${aggiornataIl}` : "Dati originali (inclusi nell'app)"}
+            </div>
+          </div>
+          <button onClick={() => setMostraAggiorna((v) => !v)} className="btn-secondary text-xs px-3 py-1.5 shrink-0">
+            {mostraAggiorna ? "Chiudi" : "Aggiorna"}
+          </button>
+        </div>
+
+        {mostraAggiorna && (
+          <div className="mt-3 pt-3 border-t border-line space-y-2">
+            <p className="text-[11px] text-inkdim">
+              Carica un guideDatabase.json aggiornato, anche parziale con solo le squadre da aggiornare: quelle presenti nel file sostituiscono le corrispondenti, le altre restano invariate.
+            </p>
+            <input ref={fileInputRef} type="file" accept=".json,application/json" onChange={handleFile} className="hidden" />
+            <button onClick={() => fileInputRef.current?.click()} className="btn-primary inline-flex items-center gap-1.5 text-xs px-3 py-1.5">
+              <Upload size={14} /> Carica file JSON
+            </button>
+
+            <button onClick={() => setMostraTesto((v) => !v)} className="mt-1 flex items-center gap-1.5 text-xs text-inkdim py-1.5">
+              <Upload size={16} /> oppure incolla JSON come testo
+            </button>
+            {mostraTesto && (
+              <div className="space-y-2">
+                <textarea
+                  value={testoJson} onChange={(e) => setTestoJson(e.target.value)}
+                  placeholder='{ "milan": { "teamId": "milan", "teamName": "Milan", ... } }'
+                  rows={5} className="input-dark w-full font-mono text-xs"
+                />
+                <div className="flex gap-2">
+                  <button onClick={() => validaEApplica(testoJson, "unisci")} className="btn-secondary flex-1">Unisci</button>
+                  <button onClick={() => validaEApplica(testoJson, "sostituisci")} className="btn-secondary flex-1">Sostituisci tutto</button>
+                </div>
+              </div>
+            )}
+
+            {msgAggiorna && <p className="text-xs text-emerald-400">{msgAggiorna}</p>}
+
+            {aggiornataIl && (
+              <button
+                onClick={() => { ripristinaGuida(); setMsgAggiorna("Ripristinati i dati originali."); }}
+                className="text-xs text-rose-400 flex items-center gap-1.5 pt-1"
+              >
+                <RotateCcw size={16} /> Ripristina dati originali
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+
       <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
         {squadreOrdinate.map((t) => (
           <button
             key={t.teamId}
             onClick={() => setTeamId(t.teamId)}
-            className={`shrink-0 flex flex-col items-center gap-1 w-14 py-1.5 rounded-lg border transition ${teamId === t.teamId ? "border-emerald-400 bg-emerald-400/10" : "border-[#22352A]"
+            className={`shrink-0 flex flex-col items-center gap-1 w-14 py-1.5 rounded-lg border transition ${teamId === t.teamId ? "border-emerald-400 bg-emerald-400/10" : "border-line"
               }`}
           >
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold ${t.modulo ? "bg-[#182821] text-[#EDEBE3]" : "bg-[#111C15] text-[#8FA396]"}`}>
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold ${t.modulo ? "bg-panelhover text-ink" : "bg-panel text-inkdim"}`}>
               {t.teamName.slice(0, 3).toUpperCase()}
             </span>
-            <span className="text-[9px] text-[#8FA396] truncate w-full text-center">{t.teamName}</span>
+            <span className="text-[9px] text-inkdim truncate w-full text-center">{t.teamName}</span>
           </button>
         ))}
       </div>
 
       {!haDati && (
-        <div className="text-sm text-[#8FA396] text-center py-10 border border-dashed border-[#22352A] rounded-xl">
+        <div className="text-sm text-inkdim text-center py-10 border border-dashed border-line rounded-xl">
           Dati non ancora disponibili per {team.teamName}.<br />Arrivano a breve.
         </div>
       )}
 
       {haDati && (
         <>
-          <div className="bg-[#111C15] border border-[#22352A] rounded-xl p-3">
+          <div className="bg-panel border border-line rounded-xl p-3">
             <div className="flex items-center justify-between mb-1">
               <div>
                 <div className="font-bold text-lg">{team.teamName}</div>
-                <div className="text-xs text-[#8FA396]">{team.modulo} · {team.allenatore}</div>
+                <div className="text-xs text-inkdim">{team.modulo} · {team.allenatore}</div>
               </div>
-              <div className="text-right text-[10px] text-[#8FA396]">
+              <div className="text-right text-[10px] text-inkdim">
                 <div>Attacco {"★".repeat(team.rating?.attacco || 0)}{"☆".repeat(5 - (team.rating?.attacco || 0))}</div>
                 <div>Difesa {"★".repeat(team.rating?.difesa || 0)}{"☆".repeat(5 - (team.rating?.difesa || 0))}</div>
               </div>
@@ -2777,7 +3313,7 @@ function GuidaTab({ giocatori, squadre }) {
           <Section title="Titolari">
             <div className="space-y-1.5">
               {(team.titolari || []).map((p) => (
-                <div key={p.nome} className="flex items-center justify-between bg-[#111C15] border border-[#22352A] rounded-lg px-3 py-2">
+                <div key={p.nome} className="flex items-center justify-between bg-panel border border-line rounded-lg px-3 py-2">
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="flex gap-1 shrink-0">
                       {p.ruoli.map((r) => (
@@ -2794,7 +3330,7 @@ function GuidaTab({ giocatori, squadre }) {
 
           {(team.ruoliChiave?.descrizione || (team.puntiChiave || []).length > 0) && (
             <Section title="Ruoli chiave e punti chiave">
-              {team.ruoliChiave?.descrizione && <p className="text-xs text-[#8FA396] mb-2">{team.ruoliChiave.descrizione}</p>}
+              {team.ruoliChiave?.descrizione && <p className="text-xs text-inkdim mb-2">{team.ruoliChiave.descrizione}</p>}
               <div className="space-y-1.5">
                 {(team.puntiChiave || []).map((p, i) => (
                   <div key={i} className="flex items-center gap-2 text-sm">
@@ -2813,12 +3349,12 @@ function GuidaTab({ giocatori, squadre }) {
                   <div key={i}>
                     <div className="flex items-center justify-between text-xs mb-1">
                       <span className="font-mono font-bold text-emerald-400">{b.giocatoreA.percentuale}%</span>
-                      <span className="text-[#EDEBE3] font-semibold truncate px-2 text-center">{b.giocatoreA.nome} · {b.giocatoreB.nome}</span>
-                      <span className="font-mono font-bold text-[#8FA396]">{b.giocatoreB.percentuale}%</span>
+                      <span className="text-ink font-semibold truncate px-2 text-center">{b.giocatoreA.nome} · {b.giocatoreB.nome}</span>
+                      <span className="font-mono font-bold text-inkdim">{b.giocatoreB.percentuale}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-[#0A120D] overflow-hidden flex">
+                    <div className="h-1.5 rounded-full bg-inkbg overflow-hidden flex">
                       <div className="h-full bg-emerald-400" style={{ width: `${b.giocatoreA.percentuale}%` }} />
-                      <div className="h-full bg-[#22352A]" style={{ width: `${b.giocatoreB.percentuale}%` }} />
+                      <div className="h-full bg-line" style={{ width: `${b.giocatoreB.percentuale}%` }} />
                     </div>
                   </div>
                 ))}
@@ -2831,12 +3367,12 @@ function GuidaTab({ giocatori, squadre }) {
               <div className="grid grid-cols-3 gap-2">
                 {(["rigoristi", "punizioni", "angoli"]).map((k) => (
                   <div key={k}>
-                    <div className="text-[10px] uppercase font-bold text-[#8FA396] mb-1">{k}</div>
+                    <div className="text-[10px] uppercase font-bold text-inkdim mb-1">{k}</div>
                     <div className="space-y-1">
                       {(team.specialisti?.[k] || []).map((p) => (
                         <div key={p.nome} className="text-xs truncate">{p.nome}</div>
                       ))}
-                      {(team.specialisti?.[k] || []).length === 0 && <div className="text-xs text-[#8FA396]">—</div>}
+                      {(team.specialisti?.[k] || []).length === 0 && <div className="text-xs text-inkdim">—</div>}
                     </div>
                   </div>
                 ))}
@@ -2846,7 +3382,7 @@ function GuidaTab({ giocatori, squadre }) {
 
           {(team.valorizzati || []).length > 0 && (
             <div className="rounded-xl border border-emerald-400/30 bg-emerald-400/5 p-3">
-              <div className="flex items-center gap-1.5 font-bold text-sm text-emerald-300 mb-2"><ThumbsUp size={14} /> Valorizzati</div>
+              <div className="flex items-center gap-1.5 font-bold text-sm text-emerald-300 mb-2"><ThumbsUp size={17} /> Valorizzati</div>
               <div className="space-y-2">
                 {team.valorizzati.map((p) => (
                   <div key={p.nome}>
@@ -2854,7 +3390,7 @@ function GuidaTab({ giocatori, squadre }) {
                       <span className="text-sm font-semibold">{p.nome}</span>
                       <StatoBadge nomeGuida={p.nome} giocatori={giocatori} squadre={squadre} />
                     </div>
-                    {(p.motivi || []).map((m, i) => <div key={i} className="text-xs text-[#8FA396]">· {m}</div>)}
+                    {(p.motivi || []).map((m, i) => <div key={i} className="text-xs text-inkdim">· {m}</div>)}
                   </div>
                 ))}
               </div>
@@ -2863,7 +3399,7 @@ function GuidaTab({ giocatori, squadre }) {
 
           {(team.penalizzati || []).length > 0 && (
             <div className="rounded-xl border border-rose-400/30 bg-rose-400/5 p-3">
-              <div className="flex items-center gap-1.5 font-bold text-sm text-rose-300 mb-2"><ThumbsDown size={14} /> Penalizzati</div>
+              <div className="flex items-center gap-1.5 font-bold text-sm text-rose-300 mb-2"><ThumbsDown size={17} /> Penalizzati</div>
               <div className="space-y-2">
                 {team.penalizzati.map((p) => (
                   <div key={p.nome}>
@@ -2871,7 +3407,7 @@ function GuidaTab({ giocatori, squadre }) {
                       <span className="text-sm font-semibold">{p.nome}</span>
                       <StatoBadge nomeGuida={p.nome} giocatori={giocatori} squadre={squadre} />
                     </div>
-                    {(p.motivi || []).map((m, i) => <div key={i} className="text-xs text-[#8FA396]">· {m}</div>)}
+                    {(p.motivi || []).map((m, i) => <div key={i} className="text-xs text-inkdim">· {m}</div>)}
                   </div>
                 ))}
               </div>
@@ -2881,16 +3417,16 @@ function GuidaTab({ giocatori, squadre }) {
           <div className="grid grid-cols-2 gap-2">
             {team.giovaneDaSeguire && (
               <div className="rounded-xl border border-violet-400/30 bg-violet-400/5 p-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-violet-300 mb-1.5"><Heart size={13} /> Giovane</div>
+                <div className="flex items-center gap-1.5 font-bold text-xs text-violet-300 mb-1.5"><Heart size={16} /> Giovane</div>
                 <div className="text-sm font-semibold">{team.giovaneDaSeguire.nome}</div>
-                <div className="text-[11px] text-[#8FA396] mt-0.5">{team.giovaneDaSeguire.motivo}</div>
+                <div className="text-[11px] text-inkdim mt-0.5">{team.giovaneDaSeguire.motivo}</div>
               </div>
             )}
             {team.scommessa && (
               <div className="rounded-xl border border-amber-400/30 bg-amber-400/5 p-3">
-                <div className="flex items-center gap-1.5 font-bold text-xs text-amber-300 mb-1.5"><Target size={13} /> Scommessa</div>
+                <div className="flex items-center gap-1.5 font-bold text-xs text-amber-300 mb-1.5"><Target size={16} /> Scommessa</div>
                 <div className="text-sm font-semibold">{team.scommessa.nome}</div>
-                <div className="text-[11px] text-[#8FA396] mt-0.5">{team.scommessa.motivo}</div>
+                <div className="text-[11px] text-inkdim mt-0.5">{team.scommessa.motivo}</div>
               </div>
             )}
           </div>
@@ -2900,11 +3436,70 @@ function GuidaTab({ giocatori, squadre }) {
   );
 }
 
+// ---------- Algoritmi Tab (parametri del motore di valutazione e della CPU) ----------
+function AlgoritmiTab({ algoritmi, updateAlgoritmi }) {
+  return (
+    <div className="space-y-6">
+      {ALGORITMI_GRUPPI.map((gruppo, i) => (
+        <React.Fragment key={gruppo.titolo}>
+          <Section title={gruppo.titolo}>
+            <p className="text-xs text-inkdim mb-3">{gruppo.descrizione}</p>
+            <div className="space-y-4">
+              {gruppo.campi.map((campo) => {
+                const valore = algoritmi[campo.chiave] ?? DEFAULT_ALGORITMI[campo.chiave];
+                return (
+                  <div key={campo.chiave}>
+                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                      <span className="text-xs font-semibold">{campo.label}</span>
+                      <span className="font-mono text-sm text-emerald-400 shrink-0">{valore.toFixed(campo.decimali)}</span>
+                    </div>
+                    <input
+                      type="range" min={campo.min} max={campo.max} step={campo.step}
+                      value={valore}
+                      onChange={(e) => updateAlgoritmi({ [campo.chiave]: parseFloat(e.target.value) })}
+                      className="w-full accent-emerald-400"
+                    />
+                    <p className="text-[11px] text-inkdim mt-0.5">{campo.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => updateAlgoritmi(Object.fromEntries(gruppo.campi.map((c) => [c.chiave, DEFAULT_ALGORITMI[c.chiave]])))}
+              className="btn-secondary mt-3 text-xs px-3 py-1.5 inline-flex items-center gap-1.5"
+            >
+              <RotateCcw size={16} /> Ripristina predefiniti
+            </button>
+          </Section>
+
+          {/* Dopo "Valore Reale (FVM)": spiega i 4 indicatori della tab Squadre che
+              derivano da questi parametri, prima di passare ai parametri della CPU. */}
+          {i === 0 && (
+            <Section title="Indicatori mostrati in Squadre">
+              <p className="text-xs text-inkdim mb-3">
+                Non sono parametri modificabili: sono numeri calcolati automaticamente a partire dal Valore Reale qui sopra, e li trovi nella tab Squadre per confrontare le rose.
+              </p>
+              <div className="space-y-3">
+                {INDICATORI_FORZA_ROSA.map((ind) => (
+                  <div key={ind.label} className="bg-panel border border-line rounded-lg px-3 py-2">
+                    <div className="text-xs font-bold text-emerald-400 mb-0.5">{ind.label}</div>
+                    <p className="text-[11px] text-inkdim">{ind.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </Section>
+          )}
+        </React.Fragment>
+      ))}
+    </div>
+  );
+}
+
 // ---------- UI helpers ----------
 function Section({ title, children }) {
   return (
     <section>
-      <h2 className="text-xs font-bold uppercase tracking-wide text-[#8FA396] mb-2">{title}</h2>
+      <h2 className="text-xs font-bold uppercase tracking-wide text-inkdim mb-2">{title}</h2>
       {children}
     </section>
   );
@@ -2913,16 +3508,16 @@ function Section({ title, children }) {
 function Field({ label, children }) {
   return (
     <label className="block">
-      <span className="text-[11px] text-[#8FA396] block mb-1">{label}</span>
+      <span className="text-[11px] text-inkdim block mb-1">{label}</span>
       {children}
     </label>
   );
 }
 
-function StatBox({ label, value, accent = "text-[#EDEBE3]" }) {
+function StatBox({ label, value, accent = "text-ink" }) {
   return (
-    <div className="bg-[#111C15] border border-[#22352A] rounded-lg p-2.5 text-center">
-      <div className="text-[10px] text-[#8FA396] uppercase">{label}</div>
+    <div className="bg-panel border border-line rounded-lg p-2.5 text-center">
+      <div className="text-[10px] text-inkdim uppercase">{label}</div>
       <div className={`font-mono text-xl font-black ${accent}`}>{value}</div>
     </div>
   );
@@ -2931,9 +3526,9 @@ function StatBox({ label, value, accent = "text-[#EDEBE3]" }) {
 function ConfirmModal({ title, text, onCancel, onConfirm }) {
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-30 px-6">
-      <div className="bg-[#111C15] border border-[#22352A] rounded-xl p-5 max-w-sm w-full">
+      <div className="bg-panel border border-line rounded-xl p-5 max-w-sm w-full">
         <h3 className="font-bold text-lg mb-1.5">{title}</h3>
-        <p className="text-sm text-[#8FA396] mb-4">{text}</p>
+        <p className="text-sm text-inkdim mb-4">{text}</p>
         <div className="flex gap-2">
           <button onClick={onCancel} className="btn-secondary flex-1">Annulla</button>
           <button onClick={onConfirm} className="flex-1 bg-rose-500/90 rounded-lg py-2.5 font-semibold text-sm active:scale-95 transition">Conferma</button>
@@ -2946,11 +3541,12 @@ function ConfirmModal({ title, text, onCancel, onConfirm }) {
 // Tailwind non supporta @apply senza config custom qui: definiamo classi via componenti inline
 const styleTag = document.createElement("style");
 styleTag.innerHTML = `
-  .input-dark { background:#0A120D; border:1px solid #22352A; border-radius:0.5rem; padding:0.55rem 0.7rem; font-size:0.875rem; color:#EDEBE3; outline:none; }
-  .input-dark:focus { border-color:#2FA84F; }
-  .btn-primary { background:#2FA84F; color:#06110A; font-weight:700; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
+  .input-dark { background:#000000; border:1px solid #374151; border-radius:0.5rem; padding:0.55rem 0.7rem; font-size:0.875rem; color:#FFFFFF; outline:none; }
+  .input-dark:focus { border-color:#10B981; }
+  .input-dark option { background:#000000; color:#FFFFFF; }
+  .btn-primary { background:#10B981; color:#FFFFFF; font-weight:700; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
   .btn-primary:active { transform:scale(0.97); }
-  .btn-secondary { background:#182821; border:1px solid #22352A; color:#EDEBE3; font-weight:600; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
+  .btn-secondary { background:#F3F4F6; border:1px solid #D1D5DB; color:#111827; font-weight:600; border-radius:0.5rem; padding:0.65rem; font-size:0.875rem; transition:transform .1s; }
   .btn-secondary:active { transform:scale(0.97); }
 `;
 if (typeof document !== "undefined" && !document.getElementById("asta-mantra-style")) {
