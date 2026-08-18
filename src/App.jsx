@@ -155,7 +155,7 @@ const ASSISTENTE_MODELLI = [
 
 // Limiti di rosa (validi per ogni squadra, compresa la propria)
 const CAP_POR = 4;
-const CAP_ALTRI = 40;
+const CAP_ALTRI = 50;
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
@@ -362,11 +362,11 @@ function calcolaValoreReale(giocatore, guidaSquadra, algoritmi = DEFAULT_ALGORIT
   const probTitolare = info ? info.probTitolare : (algoritmi.defaultTitolare ?? 0.75); // default neutro se non presente in Guida
   const fattoreTitolarita = (algoritmi.baseTitolarita ?? 0.70) + (algoritmi.coefTitolarita ?? 0.30) * probTitolare;
   const bonusRuoli = 1 + (algoritmi.bonusMultiruolo ?? 0.05) * Math.max(0, (giocatore.ruoli || []).length - 1);
-  const bonusSpecialista = 1 + (info?.isRigorista ? (algoritmi.bonusRigorista ?? 0.15) : 0) 
-                             + (info?.isPunizioni ? (algoritmi.bonusPunizioni ?? 0.05) : 0) 
-                             + (info?.isAngoli ? (algoritmi.bonusAngoli ?? 0.05) : 0);
-  const fattoreMister = info?.isValorizzato ? (algoritmi.misterValorizzato ?? 1.10) 
-                      : info?.isPenalizzato ? (algoritmi.misterPenalizzato ?? 0.90) : 1;
+  const bonusSpecialista = 1 + (info?.isRigorista ? (algoritmi.bonusRigorista ?? 0.15) : 0)
+    + (info?.isPunizioni ? (algoritmi.bonusPunizioni ?? 0.05) : 0)
+    + (info?.isAngoli ? (algoritmi.bonusAngoli ?? 0.05) : 0);
+  const fattoreMister = info?.isValorizzato ? (algoritmi.misterValorizzato ?? 1.10)
+    : info?.isPenalizzato ? (algoritmi.misterPenalizzato ?? 0.90) : 1;
   const valore = base * fattoreTitolarita * bonusRuoli * bonusSpecialista * fattoreMister;
   return { valore: Math.round(valore * 10) / 10, info };
 }
