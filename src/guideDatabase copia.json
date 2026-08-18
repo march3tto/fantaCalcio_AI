@@ -1,0 +1,3553 @@
+{
+  "_schema": {
+    "note": "Struttura dati 'Guida' per asta Mantra. Un oggetto per squadra, chiave = teamId (slug minuscolo).",
+    "team": {
+      "teamId": "string (slug, es. 'atalanta')",
+      "teamName": "string",
+      "updatedAt": "string data aggiornamento (dd/mm/yy)",
+      "modulo": "string es. '4-3-3'",
+      "allenatore": "string",
+      "rating": {
+        "attacco": "number 1-5",
+        "difesa": "number 1-5"
+      },
+      "titolari": [
+        {
+          "nome": "string",
+          "ruoli": [
+            "array codici ruolo Mantra es. Por,Dc,Ds,Dd,E,M,C,T,W,A,Pc"
+          ]
+        }
+      ],
+      "ruoliChiave": {
+        "descrizione": "string libera su schieramento chiave (opzionale)",
+        "slots": [
+          "array opzionale di ruoli chiave nel modulo, es. W,Pc,C,M,Dc,Dd,Ds"
+        ]
+      },
+      "puntiChiave": [
+        {
+          "testo": "string",
+          "sentiment": "positive | neutral | negative"
+        }
+      ],
+      "ballottaggi": [
+        {
+          "giocatoreA": {
+            "nome": "string",
+            "ruoli": [
+              "..."
+            ],
+            "percentuale": "number 0-100"
+          },
+          "giocatoreB": {
+            "nome": "string",
+            "ruoli": [
+              "..."
+            ],
+            "percentuale": "number 0-100"
+          }
+        }
+      ],
+      "specialisti": {
+        "rigoristi": [
+          {
+            "nome": "string",
+            "ruoli": [
+              "..."
+            ]
+          }
+        ],
+        "punizioni": [
+          {
+            "nome": "string",
+            "ruoli": [
+              "..."
+            ]
+          }
+        ],
+        "angoli": [
+          {
+            "nome": "string",
+            "ruoli": [
+              "..."
+            ]
+          }
+        ]
+      },
+      "valorizzati": [
+        {
+          "nome": "string",
+          "ruoli": [
+            "..."
+          ],
+          "motivi": [
+            "string",
+            "..."
+          ]
+        }
+      ],
+      "penalizzati": [
+        {
+          "nome": "string",
+          "ruoli": [
+            "..."
+          ],
+          "motivi": [
+            "string",
+            "..."
+          ]
+        }
+      ],
+      "giovaneDaSeguire": {
+        "nome": "string",
+        "ruoli": [
+          "..."
+        ],
+        "motivo": "string"
+      },
+      "scommessa": {
+        "nome": "string",
+        "ruoli": [
+          "..."
+        ],
+        "motivo": "string"
+      }
+    }
+  },
+  "atalanta": {
+    "teamId": "atalanta",
+    "teamName": "Atalanta",
+    "updatedAt": "08/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Maurizio Sarri",
+    "rating": {
+      "attacco": 4,
+      "difesa": 4
+    },
+    "titolari": [
+      {
+        "nome": "Carnesecchi",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Bernasconi",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Kolasinac",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Scalvini",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Zappacosta",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Ederson D.S.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Gaetano",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Samardzic",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Raspadori",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Scamacca",
+        "ruoli": [
+          "Pc"
+        ]
+      },
+      {
+        "nome": "De Ketelaere",
+        "ruoli": [
+          "A"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Sarri: due esterni offensivi (W), doppio centrale davanti alla difesa, due centrali difensivi centrali (Dc) affiancati da terzini con licenza limitata (Ds/Dd)",
+      "slots": [
+        "W",
+        "Pc",
+        "W",
+        "C",
+        "M",
+        "C",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Valorizzazione esterni d'attacco",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Solidità difensiva",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Scarso impiego del turnover",
+        "sentiment": "neutral"
+      },
+      {
+        "testo": "Scarsa libertà ai terzini",
+        "sentiment": "negative"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Scamacca",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Krstovic",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Gaetano",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "De Roon",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Zappacosta",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Bellanova",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 45
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Kolasinac",
+          "ruoli": [
+            "Dc",
+            "Ds"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Hien",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 45
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Samardzic",
+          "ruoli": [
+            "C",
+            "T"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Pasalic",
+          "ruoli": [
+            "C",
+            "T"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Bernasconi",
+          "ruoli": [
+            "Ds",
+            "E",
+            "B"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Ahanor",
+          "ruoli": [
+            "Ds",
+            "E"
+          ],
+          "percentuale": 49
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Scamacca",
+          "ruoli": [
+            "Pc"
+          ]
+        },
+        {
+          "nome": "Samardzic",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Ederson D.S.",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Samardzic",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Gaetano",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Samardzic",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Gaetano",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        },
+        {
+          "nome": "Bernasconi",
+          "ruoli": [
+            "Ds",
+            "E"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Scalvini",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Difesa di Sarri solida"
+        ]
+      },
+      {
+        "nome": "Raspadori",
+        "ruoli": [
+          "A"
+        ],
+        "motivi": [
+          "Adattabile anche al centro",
+          "Esterni di Sarri prolifici",
+          "Rotazioni elevate nel suo ruolo"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "De Roon",
+        "ruoli": [
+          "M",
+          "C"
+        ],
+        "motivi": [
+          "Con Sarri posizionamento più arretrato"
+        ]
+      },
+      {
+        "nome": "Kossounou",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ],
+        "motivi": [
+          "Parte indietro nelle gerarchie del mister"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Bernasconi",
+      "ruoli": [
+        "Ds",
+        "E"
+      ],
+      "motivo": "Esterno equilibrato in entrambe le fasi"
+    },
+    "scommessa": {
+      "nome": "Samardzic",
+      "ruoli": [
+        "C",
+        "T"
+      ],
+      "motivo": "Sarri può rigenerarlo"
+    }
+  },
+  "bologna": {
+    "teamId": "bologna",
+    "teamName": "Bologna",
+    "updatedAt": "17/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Domenico Tedesco",
+    "rating": {
+      "attacco": 4,
+      "difesa": 4.5
+    },
+    "titolari": [
+      {
+        "nome": "Skorupski",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Miranda J.",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Lucumì",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Vitik",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Zortea",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Ferguson",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Pobega",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Bernardeschi",
+        "ruoli": [
+          "W",
+          "T"
+        ]
+      },
+      {
+        "nome": "Rowe",
+        "ruoli": [
+          "W",
+          "T"
+        ]
+      },
+      {
+        "nome": "Dovbyk",
+        "ruoli": [
+          "Pc"
+        ]
+      },
+      {
+        "nome": "Orsolini",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Tedesco: due esterni offensivi larghi (W) e un centravanti (Pc) in attacco, mediano centrale (M) affiancato da due mezzali (C) a centrocampo, difesa a quattro con terzini (Ds/Dd) e due centrali (Dc)",
+      "slots": [
+        "W",
+        "Pc",
+        "W",
+        "C",
+        "M",
+        "C",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Valorizzazione esterni d'attacco",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Adattamento Serie A",
+        "sentiment": "neutral"
+      },
+      {
+        "testo": "Sistema di gioco molto elaborato",
+        "sentiment": "neutral"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Zortea",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Holm",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Bernardeschi",
+          "ruoli": [
+            "W",
+            "T"
+          ],
+          "percentuale": 60
+        },
+        "giocatoreB": {
+          "nome": "Odgaard",
+          "ruoli": [
+            "T",
+            "A"
+          ],
+          "percentuale": 40
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Pobega",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Moro N.",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 45
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Dovbyk",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Piccoli",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 45
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Orsolini",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        },
+        {
+          "nome": "Dovbyk",
+          "ruoli": [
+            "Pc"
+          ]
+        },
+        {
+          "nome": "Bernardeschi",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Orsolini",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        },
+        {
+          "nome": "Bernardeschi",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Orsolini",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        },
+        {
+          "nome": "Bernardeschi",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        },
+        {
+          "nome": "Miranda J.",
+          "ruoli": [
+            "Ds",
+            "E"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Rowe",
+        "ruoli": [
+          "W",
+          "T"
+        ],
+        "motivi": [
+          "Caratteristiche in linea con gli esterni del mister",
+          "Poca concorrenza"
+        ]
+      },
+      {
+        "nome": "Orsolini",
+        "ruoli": [
+          "W",
+          "A"
+        ],
+        "motivi": [
+          "Perno offensivo del gioco del mister",
+          "Maggiore minutaggio rispetto all'anno scorso"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Lucumì",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Potrebbe soffrire un sistema di gioco elaborato"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Dominguez B.",
+      "ruoli": [
+        "W"
+      ],
+      "motivo": "Tanta concorrenza sugli esterni"
+    },
+    "scommessa": {
+      "nome": "Bernardeschi",
+      "ruoli": [
+        "W",
+        "T"
+      ],
+      "motivo": "Duttile tatticamente. Usato in più ruoli."
+    }
+  },
+  "cagliari": {
+    "teamId": "cagliari",
+    "teamName": "Cagliari",
+    "updatedAt": "17/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Fabio Pisacane",
+    "rating": {
+      "attacco": 3.5,
+      "difesa": 2.5
+    },
+    "titolari": [
+      {
+        "nome": "Caprile",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Obert",
+        "ruoli": [
+          "B",
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Rodriguez Ju.",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Mina",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Zè Pedro",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ]
+      },
+      {
+        "nome": "Romano",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Winks",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Adopo",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Fazzini",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Felici",
+        "ruoli": [
+          "W"
+        ]
+      },
+      {
+        "nome": "Borrelli",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Pisacane: due esterni offensivi larghi (W) e un centravanti (Pc) in attacco, mediano centrale (M) affiancato da due mezzali (C), difesa a quattro con terzini (Ds/Dd) e due centrali (Dc)",
+      "slots": [
+        "W",
+        "Pc",
+        "W",
+        "C",
+        "M",
+        "C",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Valorizzazione giovani",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Solidità difensiva",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Attacco poco prolifico",
+        "sentiment": "negative"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Mina",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Deiola",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Zè Pedro",
+          "ruoli": [
+            "Dc",
+            "Dd"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Zappa",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 45
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Kevin Carlos",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 34
+        },
+        "giocatoreB": {
+          "nome": "Mendy P.",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 33
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Fazzini",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Mina",
+          "ruoli": [
+            "Dc"
+          ]
+        },
+        {
+          "nome": "Borrelli",
+          "ruoli": [
+            "Pc"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Fazzini",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Maldini",
+          "ruoli": [
+            "T"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Fazzini",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Obert",
+          "ruoli": [
+            "B",
+            "Ds",
+            "E"
+          ]
+        },
+        {
+          "nome": "Maldini",
+          "ruoli": [
+            "T"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Obert",
+        "ruoli": [
+          "B",
+          "Ds",
+          "E"
+        ],
+        "motivi": [
+          "Buoni cross anche dai piazzati",
+          "Utilizzato in più posizioni nella fase difensiva"
+        ]
+      },
+      {
+        "nome": "Fazzini",
+        "ruoli": [
+          "C",
+          "T"
+        ],
+        "motivi": [
+          "Voluto fortemente da Pisacane",
+          "Propensione al bonus",
+          "Dubbio su integrità fisica"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Zappa",
+        "ruoli": [
+          "Dd",
+          "E"
+        ],
+        "motivi": [
+          "Sistema molto difensivo potrebbe penalizzarlo"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Mendy P.",
+      "ruoli": [
+        "Pc"
+      ],
+      "motivo": "Può facilmente ritagliarsi spazio"
+    },
+    "scommessa": {
+      "nome": "Romano",
+      "ruoli": [
+        "M",
+        "C"
+      ],
+      "motivo": "Forte nelle transizioni offensive"
+    }
+  },
+  "como": {
+    "teamId": "como",
+    "teamName": "Como",
+    "updatedAt": "17/08/26",
+    "modulo": "4-2-3-1",
+    "allenatore": "Cesc Fabregas",
+    "rating": {
+      "attacco": 5,
+      "difesa": 4.5
+    },
+    "titolari": [
+      {
+        "nome": "Butez",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Valle",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Kempf",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Ramon",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Couto",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Da Cunha",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Perrone",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Baturina",
+        "ruoli": [
+          "T"
+        ]
+      },
+      {
+        "nome": "Paz N.",
+        "ruoli": [
+          "T",
+          "A"
+        ]
+      },
+      {
+        "nome": "Diao",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Douvikas",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Fabregas: unica punta (Pc) supportata da un trequartista centrale (T), esterni alti (W) larghi, doppio mediano centrale (M), difesa a quattro con terzini (Ds/Dd) e due centrali (Dc)",
+      "slots": [
+        "Pc",
+        "T",
+        "W",
+        "M",
+        "M",
+        "W",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Valorizzazione giovani",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Solidità difensiva",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Manovra fluida in fase offensiva",
+        "sentiment": "positive"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Perrone",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 60
+        },
+        "giocatoreB": {
+          "nome": "Milla",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 40
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Diao",
+          "ruoli": [
+            "W",
+            "A"
+          ],
+          "percentuale": 60
+        },
+        "giocatoreB": {
+          "nome": "Rodriguez Je.",
+          "ruoli": [
+            "W"
+          ],
+          "percentuale": 40
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Couto",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Smolcic I.",
+          "ruoli": [
+            "Dd",
+            "E"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Valle",
+          "ruoli": [
+            "Ds",
+            "E"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Kaiki",
+          "ruoli": [
+            "Ds",
+            "E"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Ramon",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Kempf",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 45
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Da Cunha",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        },
+        {
+          "nome": "Douvikas",
+          "ruoli": [
+            "Pc"
+          ]
+        },
+        {
+          "nome": "Baturina",
+          "ruoli": [
+            "T"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Paz N.",
+          "ruoli": [
+            "T",
+            "A"
+          ]
+        },
+        {
+          "nome": "Baturina",
+          "ruoli": [
+            "T"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Paz N.",
+          "ruoli": [
+            "T",
+            "A"
+          ]
+        },
+        {
+          "nome": "Baturina",
+          "ruoli": [
+            "T"
+          ]
+        },
+        {
+          "nome": "Da Cunha",
+          "ruoli": [
+            "C",
+            "T"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Da Cunha",
+        "ruoli": [
+          "C",
+          "T"
+        ],
+        "motivi": [
+          "Duttile tatticamente"
+        ]
+      },
+      {
+        "nome": "Douvikas",
+        "ruoli": [
+          "Pc"
+        ],
+        "motivi": [
+          "Gioco della squadra molto offensivo",
+          "Fluidità della manovra crea spazi per la punta"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Morata",
+        "ruoli": [
+          "Pc"
+        ],
+        "motivi": [
+          "Non ancora integrato al meglio nel sistema di gioco"
+        ]
+      },
+      {
+        "nome": "Valle",
+        "ruoli": [
+          "Ds",
+          "E"
+        ],
+        "motivi": [
+          "Ruolo in cui Fabregas fa molto turnover"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Liberali",
+      "ruoli": [
+        "T"
+      ],
+      "motivo": "Doti tecniche perfette per il gioco di Fabregas"
+    },
+    "scommessa": {
+      "nome": "Diao",
+      "ruoli": [
+        "W",
+        "A"
+      ],
+      "motivo": "Abile in fase di finalizzazione"
+    }
+  },
+  "fiorentina": {
+    "teamId": "fiorentina",
+    "teamName": "Fiorentina",
+    "updatedAt": "17/08/26",
+    "modulo": "4-3-2-1",
+    "allenatore": "Fabio Grosso",
+    "rating": {
+      "attacco": 3.5,
+      "difesa": 3.5
+    },
+    "titolari": [
+      {
+        "nome": "De Gea",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Valdepenas",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Viery",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Dragusin",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Jimenez A.",
+        "ruoli": [
+          "Ds",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Ndour",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Fagioli",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Oulai",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Mastantuono",
+        "ruoli": [
+          "W",
+          "T"
+        ]
+      },
+      {
+        "nome": "Atta",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Kean",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Grosso: un centravanti (Pc) supportato da due trequartisti (T), centrocampo a tre con due mezzali (C) e un mediano (M), difesa a quattro con terzini (Ds/Dd) e due centrali (Dc)",
+      "slots": [
+        "Pc",
+        "T",
+        "T",
+        "C",
+        "M",
+        "C",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Valorizzazione esterni d'attacco",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Importanza mezzali",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Difesa poco solida",
+        "sentiment": "negative"
+      },
+      {
+        "testo": "Fatica contro squadre chiuse",
+        "sentiment": "negative"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Jimenez A.",
+          "ruoli": [
+            "Ds",
+            "Dd",
+            "E"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Joao Mario",
+          "ruoli": [
+            "Ds",
+            "E"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Viery",
+          "ruoli": [
+            "Dc",
+            "Ds"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Ranieri L.",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Ndour",
+          "ruoli": [
+            "C"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Gudmundsson A.",
+          "ruoli": [
+            "T",
+            "A"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Kean",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 60
+        },
+        "giocatoreB": {
+          "nome": "Pellegrino M.",
+          "ruoli": [
+            "Pc"
+          ],
+          "percentuale": 40
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Kean",
+          "ruoli": [
+            "Pc"
+          ]
+        },
+        {
+          "nome": "Gudmundsson A.",
+          "ruoli": [
+            "T",
+            "A"
+          ]
+        },
+        {
+          "nome": "Mastantuono",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Mastantuono",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        },
+        {
+          "nome": "Fagioli",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Fagioli",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        },
+        {
+          "nome": "Mastantuono",
+          "ruoli": [
+            "W",
+            "T"
+          ]
+        },
+        {
+          "nome": "Mandragora",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Jimenez A.",
+        "ruoli": [
+          "Ds",
+          "Dd",
+          "E"
+        ],
+        "motivi": [
+          "Duttile tatticamente",
+          "Usato sia come terzino che ala offensiva"
+        ]
+      },
+      {
+        "nome": "Atta",
+        "ruoli": [
+          "C",
+          "T"
+        ],
+        "motivi": [
+          "Mezz'ali di grosso profilo",
+          "Caratteristiche compatibili con il gioco di Grosso"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Brescianini",
+        "ruoli": [
+          "M",
+          "C"
+        ],
+        "motivi": [
+          "Parte dietro nelle gerarchie"
+        ]
+      },
+      {
+        "nome": "Ranieri L.",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Può soffrire il sistema offensivo del mister",
+          "Titolarità non garantita"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Oulai",
+      "ruoli": [
+        "M",
+        "C"
+      ],
+      "motivo": "Giocatore di gamba che proverà a ritagliarsi un ruolo importante"
+    },
+    "scommessa": {
+      "nome": "Ndour",
+      "ruoli": [
+        "C"
+      ],
+      "motivo": "Giocatore fisico che può entrare facilmente nelle rotazioni"
+    }
+  },
+  "frosinone": {
+    "teamId": "frosinone",
+    "teamName": "Frosinone",
+    "updatedAt": "17/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Massimiliano Alvini",
+    "rating": {
+      "attacco": 3.5,
+      "difesa": 2
+    },
+    "titolari": [
+      {
+        "nome": "Palmisani",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Bracaglia",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Monterisi",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Akpoguma",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Oyono A.",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Koutsoupias",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Calò",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "El Azzouzi A.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Zerbin",
+        "ruoli": [
+          "W"
+        ]
+      },
+      {
+        "nome": "Ghedjemis",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Raimondo",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo Alvini: due esterni offensivi (W) e un centravanti (Pc) in attacco, mediano centrale (M) affiancato da due mezzali (C), difesa a quattro con terzini (Ds/Dd) e due centrali (Dc)",
+      "slots": [
+        "W",
+        "Pc",
+        "W",
+        "C",
+        "M",
+        "C",
+        "Ds",
+        "Dc",
+        "Dc",
+        "Dd",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Importanza esterni d'attacco",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Difensori potrebbero soffrire l'adattamento in Serie A",
+        "sentiment": "negative"
+      },
+      {
+        "testo": "Sfrutta bene i calci piazzati",
+        "sentiment": "positive"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Palmisani",
+          "ruoli": [
+            "Por"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Desplanches",
+          "ruoli": [
+            "Por"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Zerbin",
+          "ruoli": [
+            "W"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Kvernadze",
+          "ruoli": [
+            "W"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Monterisi",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Calvani",
+          "ruoli": [
+            "Dc"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Grillitsch",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 55
+        },
+        "giocatoreB": {
+          "nome": "Calò",
+          "ruoli": [
+            "M",
+            "C"
+          ],
+          "percentuale": 45
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Calò",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        },
+        {
+          "nome": "Ghedjemis",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        },
+        {
+          "nome": "Kvernadze",
+          "ruoli": [
+            "W"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Calò",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        },
+        {
+          "nome": "Ghedjemis",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Calò",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        },
+        {
+          "nome": "Kvernadze",
+          "ruoli": [
+            "W"
+          ]
+        },
+        {
+          "nome": "Ghedjemis",
+          "ruoli": [
+            "W",
+            "A"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Ghedjemis",
+        "ruoli": [
+          "W",
+          "A"
+        ],
+        "motivi": [
+          "Uomo chiave nel gioco del mister",
+          "Buone doti di finalizzazione"
+        ]
+      },
+      {
+        "nome": "Calò",
+        "ruoli": [
+          "M",
+          "C"
+        ],
+        "motivi": [
+          "Leader della squadra",
+          "Fulcro del gioco",
+          "Calcio tutti i piazzati"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Monterisi",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Propensione al malus",
+          "Adattamento in Serie A"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Fini",
+      "ruoli": [
+        "W"
+      ],
+      "motivo": "Ottime doti atletiche e nell'1vs1 lo rendono il cambio ideale a partita in corso"
+    },
+    "scommessa": {
+      "nome": "Zerbin",
+      "ruoli": [
+        "W"
+      ],
+      "motivo": "Duttilità tattica, fisico ma anche molto dinamico"
+    }
+  },
+  "genoa": {
+    "teamId": "genoa",
+    "teamName": "Genoa",
+    "updatedAt": "17/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Daniele De Rossi",
+    "rating": {
+      "attacco": 3.5,
+      "difesa": 3.5
+    },
+    "titolari": [
+      {
+        "nome": "Bijlow",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Vasquez",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Ostigard",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Marcandalli",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Mitaj",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Frendrup",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Sow",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Norton-Cuffy",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Vitinha O.",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Baldanzi",
+        "ruoli": [
+          "T"
+        ]
+      },
+      {
+        "nome": "Colombo",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": "Modulo De Rossi: un centravanti (Pc) supportato da due trequartisti (T), centrocampo a quattro con due centrali (C) e i quinti di centrocampo (E), difesa a tre con un braccetto (B) e due centrali (Dc)",
+      "slots": [
+        "Pc",
+        "T",
+        "T",
+        "E",
+        "C",
+        "C",
+        "E",
+        "B",
+        "Dc",
+        "Dc",
+        "Por"
+      ]
+    },
+    "puntiChiave": [
+      {
+        "testo": "Compattezza difensiva",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Valorizzazione esterni bassi",
+        "sentiment": "positive"
+      },
+      {
+        "testo": "Difficoltà dal punto di vista realizzativo",
+        "sentiment": "negative"
+      }
+    ],
+    "ballottaggi": [
+      {
+        "giocatoreA": {
+          "nome": "Vitinha O.",
+          "ruoli": [
+            "A"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Meichtry",
+          "ruoli": [
+            "A"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Baldanzi",
+          "ruoli": [
+            "T"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Traorè Hj.",
+          "ruoli": [
+            "T",
+            "C"
+          ],
+          "percentuale": 49
+        }
+      },
+      {
+        "giocatoreA": {
+          "nome": "Mitaj",
+          "ruoli": [
+            "Ds",
+            "E"
+          ],
+          "percentuale": 51
+        },
+        "giocatoreB": {
+          "nome": "Ellertsson",
+          "ruoli": [
+            "E"
+          ],
+          "percentuale": 49
+        }
+      }
+    ],
+    "specialisti": {
+      "rigoristi": [
+        {
+          "nome": "Colombo",
+          "ruoli": [
+            "Pc"
+          ]
+        },
+        {
+          "nome": "Ostigard",
+          "ruoli": [
+            "Dc"
+          ]
+        },
+        {
+          "nome": "Vitinha O.",
+          "ruoli": [
+            "A"
+          ]
+        }
+      ],
+      "punizioni": [
+        {
+          "nome": "Baldanzi",
+          "ruoli": [
+            "T"
+          ]
+        },
+        {
+          "nome": "Messias",
+          "ruoli": [
+            "T",
+            "A"
+          ]
+        }
+      ],
+      "angoli": [
+        {
+          "nome": "Baldanzi",
+          "ruoli": [
+            "T"
+          ]
+        },
+        {
+          "nome": "Messias",
+          "ruoli": [
+            "T",
+            "A"
+          ]
+        },
+        {
+          "nome": "Frendrup",
+          "ruoli": [
+            "M",
+            "C"
+          ]
+        }
+      ]
+    },
+    "valorizzati": [
+      {
+        "nome": "Ostigard",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Sistema difensivo esalta le sue caratteristiche",
+          "Prolifico nei calci piazzati"
+        ]
+      },
+      {
+        "nome": "Baldanzi",
+        "ruoli": [
+          "T"
+        ],
+        "motivi": [
+          "Fantasista della squadra",
+          "Svaria su tutto il fronte offensivo"
+        ]
+      }
+    ],
+    "penalizzati": [
+      {
+        "nome": "Martin",
+        "ruoli": [
+          "Dc"
+        ],
+        "motivi": [
+          "Titolarità non garantita"
+        ]
+      }
+    ],
+    "giovaneDaSeguire": {
+      "nome": "Puczka",
+      "ruoli": [
+        "E",
+        "W"
+      ],
+      "motivo": "Può giocare in tutti i ruoli della fascia"
+    },
+    "scommessa": {
+      "nome": "Marcandalli",
+      "ruoli": [
+        "Dc"
+      ],
+      "motivo": "Caratteristiche compatibili con il sistema difensivo"
+    }
+  },
+  "inter": {
+    "teamId": "inter",
+    "teamName": "Inter",
+    "updatedAt": "08/08/26",
+    "modulo": "3-5-2",
+    "allenatore": "Cristian Chivu",
+    "rating": {
+      "attacco": 5,
+      "difesa": 5
+    },
+    "titolari": [
+      {
+        "nome": "Martinez Jo.",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Bastoni",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Stones",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Akanji",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Dimarco",
+        "ruoli": [
+          "E",
+          "W"
+        ]
+      },
+      {
+        "nome": "Zielinski",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Calhanoglu",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Barella",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Diouf",
+        "ruoli": [
+          "E",
+          "C"
+        ]
+      },
+      {
+        "nome": "Thuram",
+        "ruoli": [
+          "Pc"
+        ]
+      },
+      {
+        "nome": "Martinez L.",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "juventus": {
+    "teamId": "juventus",
+    "teamName": "Juventus",
+    "updatedAt": "08/08/26",
+    "modulo": "4-2-3-1",
+    "allenatore": "Luciano Spalletti",
+    "rating": {
+      "attacco": 5,
+      "difesa": 5
+    },
+    "titolari": [
+      {
+        "nome": "Di Gregorio",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Cambiaso",
+        "ruoli": [
+          "Ds",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Kelly L.",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Bremer",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Kalulu",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ]
+      },
+      {
+        "nome": "Locatelli",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Thuram K.",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Yildiz",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "McKennie",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Alajbegovic",
+        "ruoli": [
+          "W",
+          "T"
+        ]
+      },
+      {
+        "nome": "Kolo Muani",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "lazio": {
+    "teamId": "lazio",
+    "teamName": "Lazio",
+    "updatedAt": "08/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Gennaro Gattuso",
+    "rating": {
+      "attacco": 4,
+      "difesa": 4
+    },
+    "titolari": [
+      {
+        "nome": "Mandas",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Pedraza",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Romagnoli",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Doekhi",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Marusic",
+        "ruoli": [
+          "Ds",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Dele-Bashiru",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Rovella",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Taylor K.",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Zaccagni",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Isaksen",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Noslin",
+        "ruoli": [
+          "A"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "lecce": {
+    "teamId": "lecce",
+    "teamName": "Lecce",
+    "updatedAt": "08/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Eusebio Di Francesco",
+    "rating": {
+      "attacco": 2,
+      "difesa": 3
+    },
+    "titolari": [
+      {
+        "nome": "Falcone",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Gallo",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Siebert",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Tiago Gabriel",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Veiga D.",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Gandelman",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Berisha M.",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Coulibaly L.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "N'Dri",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Pierotti",
+        "ruoli": [
+          "W"
+        ]
+      },
+      {
+        "nome": "Geubbels",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "milan": {
+    "teamId": "milan",
+    "teamName": "Milan",
+    "updatedAt": "08/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Ruben Amorim",
+    "rating": {
+      "attacco": 5,
+      "difesa": 5
+    },
+    "titolari": [
+      {
+        "nome": "Maignan",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Pavlovic",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Gabbia",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Gila",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Bartesaghi",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Modric",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Rabiot",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Saelemaekers",
+        "ruoli": [
+          "E",
+          "W"
+        ]
+      },
+      {
+        "nome": "Leao",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Pulisic",
+        "ruoli": [
+          "T",
+          "A"
+        ]
+      },
+      {
+        "nome": "Ramos G.",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "monza": {
+    "teamId": "monza",
+    "teamName": "Monza",
+    "updatedAt": "08/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Ivan Jurić",
+    "rating": {
+      "attacco": 2,
+      "difesa": 2
+    },
+    "titolari": [
+      {
+        "nome": "Thiam",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Carboni A.",
+        "ruoli": [
+          "Dc",
+          "Ds"
+        ]
+      },
+      {
+        "nome": "Delli Carri",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Kouadio",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ]
+      },
+      {
+        "nome": "Mangas",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Pessina",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Akinsanmiro",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Birindelli",
+        "ruoli": [
+          "Ds",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Mota",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Colpani",
+        "ruoli": [
+          "T"
+        ]
+      },
+      {
+        "nome": "Cutrone",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "napoli": {
+    "teamId": "napoli",
+    "teamName": "Napoli",
+    "updatedAt": "08/08/26",
+    "modulo": "4-3-3",
+    "allenatore": "Massimiliano Allegri",
+    "rating": {
+      "attacco": 5,
+      "difesa": 5
+    },
+    "titolari": [
+      {
+        "nome": "Meret",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Spinazzola",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Marin R.",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Rrahmani",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Di Lorenzo",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "McTominay",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Lobotka",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "De Bruyne",
+        "ruoli": [
+          "T"
+        ]
+      },
+      {
+        "nome": "Santos A.",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Neres",
+        "ruoli": [
+          "W",
+          "A"
+        ]
+      },
+      {
+        "nome": "Hojlund",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "parma": {
+    "teamId": "parma",
+    "teamName": "Parma",
+    "updatedAt": "08/08/26",
+    "modulo": "3-5-2",
+    "allenatore": "Carlos Cuesta",
+    "rating": {
+      "attacco": 2,
+      "difesa": 3
+    },
+    "titolari": [
+      {
+        "nome": "Corvi",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Valenti",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Circati",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Troilo",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Valeri",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Delprato",
+        "ruoli": [
+          "B",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Nicolussi Cav.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Keita M.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Bernabè",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Pellegrino M.",
+        "ruoli": [
+          "Pc"
+        ]
+      },
+      {
+        "nome": "Tourè E.",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "roma": {
+    "teamId": "roma",
+    "teamName": "Roma",
+    "updatedAt": "08/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Gian Piero Gasperini",
+    "rating": {
+      "attacco": 5,
+      "difesa": 5
+    },
+    "titolari": [
+      {
+        "nome": "Svilar",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Koulierakis",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "N'Dicka",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Mancini",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Wesley",
+        "ruoli": [
+          "E"
+        ]
+      },
+      {
+        "nome": "Konè M.",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Cristante",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Rensch",
+        "ruoli": [
+          "B",
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Dybala",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Soulè",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Malen",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "sassuolo": {
+    "teamId": "sassuolo",
+    "teamName": "Sassuolo",
+    "updatedAt": "08/08/26",
+    "modulo": "4-2-3-1",
+    "allenatore": "Alberto Aquilani",
+    "rating": {
+      "attacco": 3,
+      "difesa": 3
+    },
+    "titolari": [
+      {
+        "nome": "Muric",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Doig",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Idzes",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Walukiewicz",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ]
+      },
+      {
+        "nome": "Missori",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Lipani",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Matic",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Laurientè",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Thorstvedt",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Berardi",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Pinamonti",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "torino": {
+    "teamId": "torino",
+    "teamName": "Torino",
+    "updatedAt": "08/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Ignazio Abate",
+    "rating": {
+      "attacco": 3,
+      "difesa": 2
+    },
+    "titolari": [
+      {
+        "nome": "Paleari",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Comuzzo",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Coco",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Ismajli",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Cacciamani",
+        "ruoli": [
+          "E",
+          "W"
+        ]
+      },
+      {
+        "nome": "Fitz-Jim",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Casadei",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Pedersen",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Vlasic",
+        "ruoli": [
+          "T"
+        ]
+      },
+      {
+        "nome": "Oristanio",
+        "ruoli": [
+          "W",
+          "T"
+        ]
+      },
+      {
+        "nome": "Simeone",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "udinese": {
+    "teamId": "udinese",
+    "teamName": "Udinese",
+    "updatedAt": "08/08/26",
+    "modulo": "3-4-2-1",
+    "allenatore": "Kosta Runjaic",
+    "rating": {
+      "attacco": 3,
+      "difesa": 3
+    },
+    "titolari": [
+      {
+        "nome": "Okoye",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Solet",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Kristensen T.",
+        "ruoli": [
+          "Dc",
+          "Dd"
+        ]
+      },
+      {
+        "nome": "Kabasele",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Kamara H.",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Karlstrom",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Piotrowski",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Vojvoda",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Ekkelenkamp",
+        "ruoli": [
+          "C",
+          "T"
+        ]
+      },
+      {
+        "nome": "Zaniolo",
+        "ruoli": [
+          "T",
+          "A"
+        ]
+      },
+      {
+        "nome": "Davis K.",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  },
+  "venezia": {
+    "teamId": "venezia",
+    "teamName": "Venezia",
+    "updatedAt": "08/08/26",
+    "modulo": "3-5-2",
+    "allenatore": "Giovanni Stroppa",
+    "rating": {
+      "attacco": 3,
+      "difesa": 2
+    },
+    "titolari": [
+      {
+        "nome": "Stankovic F.",
+        "ruoli": [
+          "Por"
+        ]
+      },
+      {
+        "nome": "Moreno M.",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Bella-Kotchap",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Schingtienne",
+        "ruoli": [
+          "Dc"
+        ]
+      },
+      {
+        "nome": "Haps",
+        "ruoli": [
+          "Ds",
+          "E"
+        ]
+      },
+      {
+        "nome": "Correia T.",
+        "ruoli": [
+          "Dd",
+          "E"
+        ]
+      },
+      {
+        "nome": "Sohm",
+        "ruoli": [
+          "C"
+        ]
+      },
+      {
+        "nome": "Busio",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Basic",
+        "ruoli": [
+          "M",
+          "C"
+        ]
+      },
+      {
+        "nome": "Yeboah J.",
+        "ruoli": [
+          "A"
+        ]
+      },
+      {
+        "nome": "Adams A.",
+        "ruoli": [
+          "Pc"
+        ]
+      }
+    ],
+    "ruoliChiave": {
+      "descrizione": null,
+      "slots": []
+    },
+    "puntiChiave": [],
+    "ballottaggi": [],
+    "specialisti": {
+      "rigoristi": [],
+      "punizioni": [],
+      "angoli": []
+    },
+    "valorizzati": [],
+    "penalizzati": [],
+    "giovaneDaSeguire": null,
+    "scommessa": null
+  }
+}
