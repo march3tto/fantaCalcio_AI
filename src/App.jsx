@@ -3,7 +3,7 @@ import * as XLSX from "xlsx";
 import {
   Search, Plus, Trash2, Check, X, Wallet, ListChecks,
   LayoutGrid, Settings, RotateCcw, AlertTriangle, Undo2, Upload, Download, ChevronDown, FileSpreadsheet,
-  Star, Users, BookOpen, Heart, Target, TrendingUp, TrendingDown, ShieldAlert, ThumbsUp, ThumbsDown, Mic, LayoutTemplate, Gavel, Trophy, Cpu
+  Star, Users, BookOpen, Heart, Target, TrendingUp, TrendingDown, ShieldAlert, ThumbsUp, ThumbsDown, Mic, LayoutTemplate, Gavel, Trophy, Cpu, Bot, Send
 } from "lucide-react";
 import guideDatabaseDefault from "./guideDatabase.json";
 
@@ -135,6 +135,23 @@ const INDICATORI_FORZA_ROSA = [
 ];
 
 const STORAGE_KEY = "asta-mantra-2026-27";
+
+// ---------- Assistente AI (chat con un modello ospitato su Groq, chiamata diretta dal browser) ----------
+// La chiave di default arriva dalla variabile d'ambiente VITE_GROQ_API_KEY (impostata in
+// .env.local, non versionato — vedi .gitignore) e viene inclusa nel bundle compilato al build:
+// su un sito pubblicato chiunque apra gli strumenti sviluppatore può leggerla. L'utente può
+// comunque salvarne una propria da impostazioni (sovrascrive quella di ambiente, resta in
+// localStorage). Vedi costruisciContestoAssistente/chiamaGroq più sotto e AssistenteTab per l'interfaccia.
+const ASSISTENTE_API_KEY_STORAGE = "fantacalcio-assistente-api-key";
+const ASSISTENTE_MODEL_STORAGE = "fantacalcio-assistente-model";
+const ASSISTENTE_API_KEY_ENV = import.meta.env.VITE_GROQ_API_KEY || "";
+// ID verificati contro l'endpoint /v1/models di Groq (il catalogo cambia nel tempo:
+// se in futuro un modello smette di funzionare, controlla quelli attivi su console.groq.com/docs/models).
+const DEFAULT_ASSISTENTE_MODEL = "openai/gpt-oss-120b";
+const ASSISTENTE_MODELLI = [
+  { id: "openai/gpt-oss-120b", label: "GPT-OSS 120B", nota: "il più capace, contesto ampio" },
+  { id: "openai/gpt-oss-20b", label: "GPT-OSS 20B", nota: "più veloce, per domande semplici" },
+];
 
 // Limiti di rosa (validi per ogni squadra, compresa la propria)
 const CAP_POR = 4;
@@ -1204,6 +1221,9 @@ export default function App() {
         {tab === "algoritmi" && (
           <AlgoritmiTab algoritmi={algoritmi} updateAlgoritmi={updateAlgoritmi} />
         )}
+        {tab === "assistente" && (
+          <AssistenteTab setup={setup} squadre={squadre} giocatori={giocatori} algoritmi={algoritmi} />
+        )}
       </main>
 
       {/* Nav inferiore, bloccata in fondo: fa parte del layout flex, non "fixed",
@@ -1222,14 +1242,15 @@ export default function App() {
           { id: "guida", label: "Guida", icon: BookOpen },
           { id: "simulazione", label: "Simula", icon: Gavel },
           { id: "algoritmi", label: "Algoritmi", icon: Cpu },
+          { id: "assistente", label: "Assistente", icon: Bot },
         ].map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition ${tab === id ? "text-emerald-400" : "text-inkdim"}`}
+            className={`flex-1 min-w-0 flex flex-col items-center gap-1 py-2.5 transition ${tab === id ? "text-emerald-400" : "text-inkdim"}`}
           >
             <Icon size={24} />
-            <span className="text-[10px] font-semibold tracking-wide">{label}</span>
+            <span className="text-[10px] font-semibold tracking-wide w-full truncate text-center px-0.5">{label}</span>
           </button>
         ))}
       </nav>
@@ -3491,6 +3512,298 @@ function AlgoritmiTab({ algoritmi, updateAlgoritmi }) {
           )}
         </React.Fragment>
       ))}
+    </div>
+  );
+}
+
+// ---------- Assistente AI ----------
+
+// Per ogni ruolo Mantra tiene solo i migliori N giocatori disponibili per valore reale,
+// più tutti i preferiti dell'utente (deduplicati): il listone completo (anche 500-700
+// giocatori) sfora di gran lunga il limite di token per richiesta dei piani gratuiti delle
+// API (Groq: 8000 token/minuto su questo modello), quindi il contesto deve restare
+// compatto indipendentemente da quanto è grande la lista importata dall'utente.
+const MIGLIORI_PER_RUOLO_CONTESTO = 6;
+
+function selezionaGiocatoriContesto(giocatori, algoritmi) {
+  const disponibili = giocatori.filter((g) => g.stato === "disponibile");
+  const conValore = disponibili.map((g) => ({ g, valore: valoreGiocatore(g, algoritmi).valore }));
+
+  const selezionati = new Map();
+  conValore.forEach((x) => { if (x.g.preferito) selezionati.set(x.g.id, x); });
+
+  RUOLI.forEach((ruolo) => {
+    conValore
+      .filter((x) => (x.g.ruoli || []).includes(ruolo))
+      .sort((a, b) => b.valore - a.valore)
+      .slice(0, MIGLIORI_PER_RUOLO_CONTESTO)
+      .forEach((x) => selezionati.set(x.g.id, x));
+  });
+
+  return { elenco: Array.from(selezionati.values()).sort((a, b) => b.valore - a.valore), totaleDisponibili: disponibili.length };
+}
+
+// Riassume lo stato corrente dell'app (setup, la tua rosa, tutte le squadre, un
+// sottoinsieme mirato dei giocatori ancora disponibili e i dati della Guida) in un system
+// prompt testuale: viene ricostruito da zero a ogni domanda, così l'assistente vede sempre
+// i dati aggiornati, comprese le scelte fatte nel frattempo durante l'asta.
+function costruisciContestoAssistente({ setup, squadre, giocatori, algoritmi, gById }) {
+  const ioSquadra = squadre.find((s) => s.isMia) || squadre[0];
+  const analisiSquadre = squadre.map((s) => analizzaSquadra(s, gById));
+  const ioAnalisi = analisiSquadre.find((a) => a.squadra.id === ioSquadra.id);
+
+  const righeRosaMia = ioSquadra.rosa.map((r) => {
+    const g = gById[r.giocatoreId];
+    return `- ${r.ruolo} ${g?.nome || "?"} (${g?.squadra || "?"}) · pagato ${r.prezzo} cr`;
+  }).join("\n") || "(nessun giocatore ancora acquistato)";
+
+  const righeSquadre = analisiSquadre.map((a) => {
+    const s = a.squadra;
+    return `- ${s.nome}${s.isMia ? " [tu]" : ""}: ${s.rosa.length} giocatori, speso ${a.speso}/${s.budgetTotale} cr, residuo ${a.residuo} cr`;
+  }).join("\n");
+
+  const { elenco: giocatoriSelezionati, totaleDisponibili } = selezionaGiocatoriContesto(giocatori, algoritmi);
+  const righeGiocatori = giocatoriSelezionati.map(({ g, valore }) =>
+    `${(g.ruoli || []).join("/")};${g.nome};${g.squadra};quot=${g.quotazione};fvm=${g.fvm ?? "-"};valoreReale=${valore}${g.preferito ? ";PREFERITO" : ""}`
+  ).join("\n");
+
+  const squadreGuida = Object.values(guideDatabase)
+    .filter((t) => t && t.modulo)
+    .map((t) => {
+      const titolari = (t.titolari || []).map((p) => `${p.nome}(${p.ruoli.join("/")})`).join(", ");
+      return `${t.teamName}: modulo ${t.modulo}, allenatore ${t.allenatore}, attacco ${t.rating?.attacco ?? "-"}/5, difesa ${t.rating?.difesa ?? "-"}/5. Titolari: ${titolari || "n.d."}.`;
+    }).join("\n");
+
+  return `Sei l'assistente di un'app di asta del Fantacalcio (schema Mantra, Serie A 26/27) e aiuti l'utente a preparare e gestire la sua asta. Rispondi sempre in italiano, in modo diretto e concreto, citando nomi di giocatori quando è utile. Usa solo i dati qui sotto: se un'informazione non c'è (es. un giocatore specifico non è tra quelli elencati), dillo esplicitamente invece di inventarla.
+
+## Setup asta
+Budget totale: ${setup.budgetTotale} crediti · Partecipanti: ${setup.numPartecipanti} · Modulo di riferimento: ${setup.modulo}
+Ripartizione budget: Portieri ${setup.split.POR}% · Difensori ${setup.split.DIF}% · Centrocampisti ${setup.split.CEN}% · Attaccanti ${setup.split.ATT}%
+
+## La rosa dell'utente (${ioSquadra.nome})
+Budget: ${ioSquadra.budgetTotale} cr · Speso: ${ioAnalisi?.speso ?? 0} cr · Residuo: ${ioAnalisi?.residuo ?? ioSquadra.budgetTotale} cr
+${righeRosaMia}
+
+## Tutte le squadre partecipanti
+${righeSquadre || "(nessuna squadra configurata)"}
+
+## Giocatori disponibili — selezione mirata, non l'elenco completo
+Per stare nei limiti di token dell'API, invece di tutti i ${totaleDisponibili} giocatori disponibili qui sotto trovi solo i migliori ${MIGLIORI_PER_RUOLO_CONTESTO} per ciascun ruolo Mantra (per valore reale stimato) più tutti i preferiti dell'utente. Se manca un giocatore che l'utente nomina, dillo: potrebbe comunque essere disponibile, semplicemente non tra i migliori del suo ruolo.
+Formato riga: Ruoli;Nome;Squadra;quot=Quotazione;fvm=FVM;valoreReale=ValoreRealeStimato[;PREFERITO]
+${righeGiocatori || "(nessun giocatore in lista: l'utente non ha ancora importato il listone)"}
+
+## Guida squadre Serie A (moduli, titolari, rating attacco/difesa)
+${squadreGuida || "(nessun dato Guida disponibile)"}`;
+}
+
+// Chiama l'endpoint chat completions di Groq (compatibile OpenAI) direttamente dal browser:
+// nessun backend proprio, quindi la chiave viaggia nell'header Authorization della richiesta
+// che parte dal client (vedi avviso sulla sicurezza in AssistenteTab). A differenza di Anthropic,
+// Groq vuole il system prompt come primo messaggio con role "system" dentro l'array "messages",
+// non come parametro a parte.
+async function chiamaGroq({ apiKey, model, systemPrompt, messaggi }) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "authorization": `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1024,
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...messaggi.map((m) => ({ role: m.ruolo, content: m.testo })),
+      ],
+    }),
+  });
+
+  const dati = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const msg = dati?.error?.message;
+    if (res.status === 401) throw new Error("Chiave API non valida o scaduta: controllala nelle impostazioni dell'assistente.");
+    if (res.status === 429) throw new Error("Limite di richieste raggiunto: riprova tra qualche istante.");
+    if (res.status === 400) throw new Error(`Richiesta non valida: ${msg || "controlla il modello selezionato."}`);
+    throw new Error(msg || `Errore imprevisto (HTTP ${res.status}).`);
+  }
+
+  const testo = dati?.choices?.[0]?.message?.content;
+  return testo || "(il modello non ha restituito testo)";
+}
+
+function AssistenteTab({ setup, squadre, giocatori, algoritmi }) {
+  const gById = useMemo(() => Object.fromEntries(giocatori.map((g) => [g.id, g])), [giocatori]);
+
+  const [apiKey, setApiKey] = useState(() => {
+    try { return localStorage.getItem(ASSISTENTE_API_KEY_STORAGE) || ASSISTENTE_API_KEY_ENV; } catch (e) { return ASSISTENTE_API_KEY_ENV; }
+  });
+  const [modello, setModello] = useState(() => {
+    try { return localStorage.getItem(ASSISTENTE_MODEL_STORAGE) || DEFAULT_ASSISTENTE_MODEL; } catch (e) { return DEFAULT_ASSISTENTE_MODEL; }
+  });
+  const [mostraImpostazioni, setMostraImpostazioni] = useState(!apiKey);
+  const [chiaveTemp, setChiaveTemp] = useState(apiKey);
+  const [modelloTemp, setModelloTemp] = useState(modello);
+
+  const [messaggi, setMessaggi] = useState([]); // {ruolo: 'user'|'assistant', testo}
+  const [input, setInput] = useState("");
+  const [caricando, setCaricando] = useState(false);
+  const [errore, setErrore] = useState("");
+  const bottomRef = useRef(null);
+
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messaggi, caricando]);
+
+  function salvaImpostazioni() {
+    const chiave = chiaveTemp.trim();
+    setApiKey(chiave);
+    setModello(modelloTemp);
+    try {
+      localStorage.setItem(ASSISTENTE_API_KEY_STORAGE, chiave);
+      localStorage.setItem(ASSISTENTE_MODEL_STORAGE, modelloTemp);
+    } catch (e) { /* storage non disponibile: l'impostazione resta attiva solo per questa sessione */ }
+    setMostraImpostazioni(false);
+  }
+
+  // Toglie solo la chiave personalizzata salvata in locale: se è impostata una variabile
+  // d'ambiente di default, l'assistente torna a usare quella invece di richiederne subito una.
+  function rimuoviChiave() {
+    try { localStorage.removeItem(ASSISTENTE_API_KEY_STORAGE); } catch (e) { /* ignora */ }
+    setApiKey(ASSISTENTE_API_KEY_ENV);
+    setChiaveTemp(ASSISTENTE_API_KEY_ENV);
+    setMostraImpostazioni(!ASSISTENTE_API_KEY_ENV);
+  }
+
+  async function invia(testo) {
+    const domanda = (testo ?? input).trim();
+    if (!domanda || caricando || !apiKey) return;
+    const nuoviMessaggi = [...messaggi, { ruolo: "user", testo: domanda }];
+    setMessaggi(nuoviMessaggi);
+    setInput("");
+    setErrore("");
+    setCaricando(true);
+    try {
+      const systemPrompt = costruisciContestoAssistente({ setup, squadre, giocatori, algoritmi, gById });
+      // Manda solo gli ultimi scambi: tiene bassi i costi di una conversazione lunga
+      // senza perdere il filo dell'ultimo argomento di cui si sta parlando.
+      const risposta = await chiamaGroq({ apiKey, model: modello, systemPrompt, messaggi: nuoviMessaggi.slice(-8) });
+      setMessaggi((prev) => [...prev, { ruolo: "assistant", testo: risposta }]);
+    } catch (e) {
+      setErrore(e.message || "Errore imprevisto durante la richiesta.");
+    } finally {
+      setCaricando(false);
+    }
+  }
+
+  if (mostraImpostazioni) {
+    return (
+      <div className="space-y-5">
+        <Section title="Assistente AI · Configurazione">
+          <p className="text-xs text-inkdim mb-3">
+            L'assistente usa un modello ospitato su Groq per rispondere a domande sulla tua asta, con accesso ai dati che hai già in app: la tua rosa, i giocatori disponibili, le altre squadre e la Guida. Serve una API key Groq, ottenibile su <span className="text-ink font-semibold">console.groq.com</span>. Ogni domanda ha un costo a consumo in base a token e modello scelto.
+            {ASSISTENTE_API_KEY_ENV && " È già impostata una chiave di default (variabile d'ambiente): lascia il campo com'è per usare quella, oppure salvane una tua per sostituirla."}
+          </p>
+          <div className="rounded-lg border border-amber-400/40 bg-amber-400/10 px-3 py-2 mb-3 flex items-start gap-2">
+            <AlertTriangle size={16} className="text-amber-400 shrink-0 mt-0.5" />
+            <p className="text-[11px] text-amber-200">
+              La chiave inserita qui resta solo in questo browser (localStorage) e viene usata per chiamare l'API di Groq direttamente dal client: non c'è un server che la protegge. La chiave di default da variabile d'ambiente è ancora più esposta: viene inclusa nel codice compilato dell'app, quindi chiunque apra gli strumenti sviluppatore su un sito pubblicato può leggerla. Non pubblicare questa app con una chiave reale se non vuoi che sia visibile a chi la visita.
+            </p>
+          </div>
+          <Field label="API key Groq">
+            <input
+              type="password" value={chiaveTemp} onChange={(e) => setChiaveTemp(e.target.value)}
+              placeholder="gsk_..." className="input-dark w-full font-mono"
+            />
+          </Field>
+          <Field label="Modello">
+            <select value={modelloTemp} onChange={(e) => setModelloTemp(e.target.value)} className="input-dark w-full">
+              {ASSISTENTE_MODELLI.map((m) => (
+                <option key={m.id} value={m.id} className="bg-panel">{m.label} — {m.nota}</option>
+              ))}
+            </select>
+          </Field>
+          <div className="flex gap-2 mt-3">
+            <button onClick={salvaImpostazioni} disabled={!chiaveTemp.trim()} className="btn-primary flex-1 disabled:opacity-40">Salva e continua</button>
+            {apiKey && <button onClick={() => setMostraImpostazioni(false)} className="btn-secondary px-4">Annulla</button>}
+          </div>
+          {apiKey && (
+            <button onClick={rimuoviChiave} className="text-xs text-rose-400 mt-3">Rimuovi chiave salvata</button>
+          )}
+        </Section>
+      </div>
+    );
+  }
+
+  const suggerimenti = [
+    "Qual è il miglior affare fatto finora?",
+    "Chi mi consigli per completare il reparto difensori?",
+    "Riassumi la mia rosa e cosa mi manca ancora",
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-inkdim">
+          <Bot size={17} /> Assistente AI
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => { setChiaveTemp(apiKey); setModelloTemp(modello); setMostraImpostazioni(true); }}
+            className="text-inkdim p-1.5" aria-label="Impostazioni assistente"
+          >
+            <Settings size={17} />
+          </button>
+          <button onClick={() => { setMessaggi([]); setErrore(""); }} className="text-inkdim p-1.5" aria-label="Nuova conversazione">
+            <RotateCcw size={17} />
+          </button>
+        </div>
+      </div>
+
+      {messaggi.length === 0 && (
+        <div className="space-y-2">
+          <p className="text-xs text-inkdim">Chiedimi qualcosa sulla tua asta: ho sotto mano la tua rosa, i giocatori disponibili e i dati della Guida.</p>
+          <div className="flex flex-col gap-1.5">
+            {suggerimenti.map((s) => (
+              <button key={s} onClick={() => invia(s)} className="text-left text-xs bg-panel border border-line rounded-lg px-3 py-2 text-inkdim active:bg-panelhover">
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {messaggi.map((m, i) => (
+          <div key={i} className={`flex ${m.ruolo === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${m.ruolo === "user" ? "bg-emerald-400/15 border border-emerald-400/40" : "bg-panel border border-line"}`}>
+              {m.testo}
+            </div>
+          </div>
+        ))}
+        {caricando && (
+          <div className="flex justify-start">
+            <div className="bg-panel border border-line rounded-xl px-3 py-2 text-sm text-inkdim">Sto pensando...</div>
+          </div>
+        )}
+        <div ref={bottomRef} />
+      </div>
+
+      {errore && (
+        <div className="flex items-center gap-1.5 text-xs text-rose-400 bg-rose-400/10 border border-rose-400/30 rounded-lg px-2.5 py-1.5">
+          <AlertTriangle size={13} className="shrink-0" /> {errore}
+        </div>
+      )}
+
+      <div className="flex gap-2 sticky bottom-0 bg-inkbg pt-2 pb-1 -mx-4 px-4 border-t border-line">
+        <input
+          value={input} onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); invia(); } }}
+          placeholder="Scrivi una domanda..." className="input-dark flex-1"
+          disabled={caricando}
+        />
+        <button onClick={() => invia()} disabled={caricando || !input.trim()} className="btn-primary px-4 disabled:opacity-40" aria-label="Invia">
+          <Send size={17} />
+        </button>
+      </div>
     </div>
   );
 }
